@@ -114,11 +114,22 @@ def get_need(sti, T, planExp, params) :
 
 """==============================================================================================================="""
 
-from typing_extensions import ParamSpecArgs
-from typing import Union
-from maze import LinearTrack, OpenField
-from parameters import Parameters
-from mazemdp.toolbox import egreedy, egreedy_loc, sample_categorical
+def create_plan_exp( m : Union[LinearTrack,OpenField], params : Parameters ) :
+    planExp = np.empty( (0,4) )
+
+    for a in range(m.action_space.n) :
+        for s in range(m.nb_states-1) :
+            exp = np.array( [ s, a, m.exp_LastR[s,a], m.exp_LastStp1[s,a] ] ) 
+            planExp = np.append( planExp, [exp], axis=0 )
+    
+    if params.remove_samestate : # remove all experiences that goes to the same states (i.e walls)
+        planExp[planExp[:, 0] != planExp[:, 3]]
+    
+    planExp = planExp[ np.invert( np.isnan(planExp).any(axis=1) ) ] # remove all experiences with NaNs in it , we dont need this theoretically
+
+    return planExp
+
+"""==============================================================================================================="""
 
 
 def run_simulation( m : Union[LinearTrack,OpenField], params : Parameters, render: bool = False) :
@@ -210,22 +221,11 @@ def run_simulation( m : Union[LinearTrack,OpenField], params : Parameters, rende
       
       
       while p <= params.Nplan :
-        print(p)
         p = p + 1
         # === Create a list of 1-step backups based on 1-step models === CREATE PLAN EXP
         
-        planExp = np.empty( (0,4) )
-
-        for a in range(m.action_space.n) :
-          for s in range(m.nb_states-1) :
-            exp = np.array( [ s, a, m.exp_LastR[s,a], m.exp_LastStp1[s,a] ] ) 
-            planExp = np.append( planExp, [exp], axis=0 )
+        planExp = create_plan_exp(m,params)
         
-        if params.remove_samestate : # remove all experiences that goes to the same states (i.e walls)
-          planExp[planExp[:, 0] != planExp[:, 3]]
-        
-        planExp = planExp[ np.invert( np.isnan(planExp).any(axis=1) ) ] # remove all experiences with NaNs in it , we dont need this theoretically
-
         # === Expand previous backup with one extra action ===   EXPAND PREVIOUS BACKUP
         if params.expandFurther and np.size(planning_backups,0) > 0 :
           
@@ -368,4 +368,6 @@ def evaluate(m : Union[OpenField,LinearTrack] , q_list, params : Parameters, ren
     list_steps.append(nb_steps)
 
   return list_steps
+
+
 
