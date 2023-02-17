@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 o = OpenField()
 params = Parameters()
 
+o.reInit()
+
 q_list = run_simulation(o,params)
 list_steps = evaluate(o,q_list,params)
 
