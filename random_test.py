@@ -136,7 +136,6 @@ def create_plan_exp( m : Union[LinearTrack,OpenField], params : Parameters ) :
 """==============================================================================================================="""
 
 def sim2(m : Union[LinearTrack,OpenField], params : Parameters) :
-
     m.reInit()
     m.mdp.timeout = params.MAX_N_STEPS
 
@@ -198,12 +197,102 @@ def sim2(m : Union[LinearTrack,OpenField], params : Parameters) :
                 planExp = list(planExp)
 
                 if params.expandFurther and planning_backups.shape[0] > 0 :
-                    ...
-                
-                
+                    seqStart = np.argwhere(planning_backups[:, 4] == 1)[-1]
+                    seqSoFar = planning_backups[seqStart[0]:, 0:4]
+                    sn = int( seqSoFar[-1, 3] )  # Final state reached in the last planning st
 
-            st = stp1
-            step_i = step_i + 1
+                    if params.onlineVSoffline == "online" : # agent is awake 
+                        probs = softmax(m.Q, sn, params.tau)
+                  
+                    else : # agent is asleep 
+                        probs = np.zeros( np.size(m.Q[sn]) )
+                        probs[ m.Q[sn] == max( m.Q[sn] ) ] =  1 / ( sum(m.Q[sn]) == max(m.Q[sn]) ) 
+
+                    an = sample_categorical( probs )
+                    snp1 = m.exp_LastStp1[sn,an]
+                    rn = m.exp_LastR[sn,an]
+
+                    step_isNaN = np.isnan( m.exp_LastStp1[sn,an] ) or np.isnan( m.exp_LastR[sn,an] )
+                    step_isRepeated = np.isin( snp1 , [ seqSoFar[:, 0], seqSoFar[:, 3] ] )
+
+                    if (not step_isNaN) and (params.allowLoops or (not step_isRepeated)) :
+                        expanded_exp = np.array( [sn, an, rn, snp1] )
+                        seqUpdated = np.append( seqSoFar, [expanded_exp], axis=0 )
+                        planExp = np.append(planExp, seqUpdated)
+                    
+
+                
+                # === Gain term ===
+                [ gain , saGain ] = get_gain(m.Q,planExp,params)
+                
+                # === Need term ===
+                need = get_need(st, m.T, planExp, params)
+
+                if nbEpisode == 45 and not done :
+                    m.needMat[st,st] = need[-1][0] 
+                  
+
+                # === EVB ===  GET MAX EVB 
+                EVB = np.empty( planExp.shape[0] )
+                EVB.fill(np.nan)
+
+                for i in range(planExp.shape[0]) :
+                EVB[i] = np.sum( need[i][-1] * max( gain[i][-1], params.baselineGain ) )
+                
+                opportCost = np.nanmean( m.listExp[:,2] )
+                EVBthresh = min(opportCost , params.EVBthresh)
+
+                if max(EVB) > EVBthresh :
+                    maxEVB_idx = np.argwhere(EVB == max(EVB))
+
+                    if len(maxEVB_idx) > 1 :
+                        maxEVB_idx = maxEVB_idx[np.random.randint(len(maxEVB_idx))]  
+                
+                    else:
+                        maxEVB_idx = maxEVB_idx[0][0]
+                
+                    plan_exp_arr = np.array(planExp, dtype=object)
+                  
+                    if len(plan_exp_arr[maxEVB_idx].shape) == 1:
+                        plan_exp_arr_max = np.expand_dims(plan_exp_arr[maxEVB_idx], axis=0)
+                    else:
+                        plan_exp_arr_max = np.expand_dims(plan_exp_arr[maxEVB_idx][-1], axis=0)
+
+                    for n in range(plan_exp_arr_max.shape[0]):
+                        # Retrieve information from this experience
+                        s_plan = int(plan_exp_arr_max[n][0])
+                        a_plan = int(plan_exp_arr_max[n][1])
+                        # Individual rewards from this step to end of trajectory
+                        rew_to_end = plan_exp_arr_max[n:][:, 2]
+                        # Notice the use of '-1' instead of 'n', meaning that stp1_plan is the final state of the
+                        # trajectory
+                        stp1_plan = int(plan_exp_arr_max[-1][3])
+
+                        # Discounted cumulative reward from this step to end of trajectory
+                        n_plan = np.size(rew_to_end)
+                        r_plan = np.dot(np.power(params.gamma, np.arange(0, n_plan)), rew_to_end)
+
+                        # ADD PLAN Q_LEARNING UPDATES TO Q_LEARNING FUNCTION
+                        stp1_value = np.sum(np.multiply(m.Q[stp1_plan], softmax(m.Q,stp1_plan,params.tau)  ))
+                  
+                        Q_target = r_plan + (params.gamma ** n_plan) * stp1_value
+                      
+                        m.Q[s_plan, a_plan] += params.alpha * (Q_target - m.Q[s_plan, a_plan])
+
+            #============================== COMPLETE STEP ==================================#
+
+                # === Move from st to stp1 ===
+                st = stp1
+                nbSteps = nbSteps + 1
+
+                if done :
+                    st = m.reset()
+
+                    if (nbSteps < params.MAX_N_STEPS) and params.Tgoal2start : 
+                        targVec = np.zeros( (1, m.nb_states) )
+                        targVec[0][st] = 1
+                        m.T[stp1,:] = m.T[stp1,:] + params.Talpha * ( targVec - m.T[stp1,:] ) # shift T-matrix towards targvec (?) => needs explanation
+                        m.listExp = np.append( m.listExp , [[stp1, np.NaN, np.NaN, st]], axis=0)
 
 
     return
