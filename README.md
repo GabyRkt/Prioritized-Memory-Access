@@ -10,7 +10,7 @@ Vous trouverez une première version de notre code : [Prioritized Memory Access]
 
 
 
-# Difficultés rencontrés 
+# Difficultés rencontrées 
 
 - Compréhension de l'article (i.e. Offline)
 - Implémentation du code
