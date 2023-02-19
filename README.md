@@ -9,3 +9,17 @@ De plus, pour réaliser ce projet, nous nous sommes inspirés de nombreux codes 
 Vous trouverez une première version de notre code : [Prioritized Memory Access](https://colab.research.google.com/drive/1gJQQxFmRuTYHx_oU7vF4k3s7POdKIe6T)
 
 
+
+# Difficultés rencontrés 
+
+- Compréhension de l'article (i.e. Offline)
+- Implémentation du code
+  - Calcul du need (successor representation)
+  - Planning backup et dimension de planExp
+- Prise en main de matlab
+- Compréhension de MazeMDP
+
+
+
+
+
