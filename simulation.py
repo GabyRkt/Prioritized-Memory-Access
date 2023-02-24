@@ -25,7 +25,7 @@ def run_pre_explore(m : Union[LinearTrack,OpenField]) :
     """ Function that updates the transition matrix m.T for the first time
 
         Arguments:
-            m -- Union[LinearTrack,OpenField] from maze.py (class with the maze and the agent)
+            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
         
         Returns:      
     """
@@ -56,8 +56,8 @@ def add_goal2start(m: Union[LinearTrack,OpenField], params : Parameters) :
     """ Function that adds a transition between the goal and the potential starts to restart an episode
 
         Arguments:
-            m -- Union[LinearTrack,OpenField] from maze.py (class with the maze and the agent)
-            params -- Parameters from parameters.py (class with the parameters of the current simulation)
+            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
+            params -- Parameters from parameters.py : class with the settings of the current simulation 
         
         Returns:      
     """
@@ -90,12 +90,12 @@ def add_goal2start(m: Union[LinearTrack,OpenField], params : Parameters) :
 """==============================================================================================================="""
 
 def get_action(st, m: Union[LinearTrack,OpenField], params : Parameters) :
-    """ Function that determines what action to take for the current state based on the policy in the settings
+    """ Function that determines which action to take for the current state based on the policy in the settings
 
         Arguments:
             st -- int : the current state
-            m -- Union[LinearTrack,OpenField] from maze.py (class with the maze and the agent)
-            params -- Parameters from parameters.py (class with the parameters of the current simulation)
+            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
+            params -- Parameters from parameters.py : class with the settings of the current simulation 
         
         Returns:    
             at -- int : the action chosen depending on the policy  
@@ -121,8 +121,8 @@ def update_transition_n_experience(st,at,r,stp1, m:Union[LinearTrack,OpenField],
             at -- int : the taken action
             r -- float : the obtained reward  
             stp1 -- int : the next state
-            m -- Union[LinearTrack,OpenField] from maze.py (class with the maze and the agent)
-            params -- Parameters from parameters.py (class with the parameters of the current simulation)
+            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
+            params -- Parameters from parameters.py : class with the settings of the current simulation 
         
         Returns:    
     """
@@ -147,8 +147,8 @@ def update_q_table(st,at,r,stp1, m:Union[LinearTrack,OpenField], params:Paramete
             at -- int : the taken action
             r -- float : the obtained reward  
             stp1 -- int : the next state
-            m -- Union[LinearTrack,OpenField] from maze.py (class with the maze and the agent)
-            params -- Parameters from parameters.py (class with the parameters of the current simulation)
+            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
+            params -- Parameters from parameters.py : class with the settings of the current simulation 
         
         Returns:    
     """
@@ -164,6 +164,17 @@ def update_q_table(st,at,r,stp1, m:Union[LinearTrack,OpenField], params:Paramete
 """==============================================================================================================="""
 
 def create_plan_exp( m : Union[LinearTrack,OpenField], params : Parameters ) :
+    """ Function that ????????????????????????????????????????????????????????????????????????????????????????????????
+
+        Arguments:
+            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
+            params -- Parameters from parameters.py : class with the settings of the current simulation 
+        
+        Returns:    
+            planExp -- list : ????????????????????????????????????????????????????????????????????????????????????????????????
+    """
+
+
     """
     create a matrix with shape :
      [
@@ -194,6 +205,17 @@ def create_plan_exp( m : Union[LinearTrack,OpenField], params : Parameters ) :
 """==============================================================================================================="""
 
 def get_gain (Q, planExp, params) :
+    """ Function that calculates the gain of each state and each action based on the current Q-table and planExp
+
+        Arguments:
+            Q -- matrix ( state X action ) : the current Q-table
+            planExp -- list : ????????????????????????????????????????????????????????????????????????????????????????????????
+            params -- Parameters from parameters.py : class with the settings of the current simulation 
+        
+        Returns:   
+            gain -- list : list of the gain calulated for each experience in planExp
+            gain_matrix -- matrix ( state X action) : the maximum gain calculated for each state and each action
+    """
     # planExp = [ step1, step3, ....]
     gain = []
     gain_matrix = np.empty(Q.shape)
@@ -261,6 +283,18 @@ def get_gain (Q, planExp, params) :
 """==============================================================================================================="""
 
 def get_need(sti, T, planExp, params) :
+    """ Function that calculates the need for a state depending on planExp and the current mode of the agent (offline or online)
+
+        Arguments:
+            sti -- int : the current state
+            T : matrix ( state X state ) : matrix of transition
+            planExp -- list : ????????????????????????????????????????????????????????????????????????????????????????????????
+            params -- Parameters from parameters.py : class with the settings of the current simulation 
+        
+        Returns:    
+            need -- float : need calculated for the state in parameter 
+    """
+
     need = []
 
     if params.onlineVSoffline == "online" :
@@ -291,6 +325,15 @@ def get_need(sti, T, planExp, params) :
 """==============================================================================================================="""
 
 def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
+    """ Function that calculates the need for a state depending on planExp and the current mode of the agent (offline or online)
+
+        Arguments:
+            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
+            params -- Parameters from parameters.py : class with the settings of the current simulation 
+        
+        Returns:    
+            list_steps -- list of tuple (state, action, reward, next_step) : list of each step taken by the agent during the simulation
+    """
 
     m.reInit()
     m.mdp.timeout = params.MAX_N_STEPS
