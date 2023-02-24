@@ -5,6 +5,9 @@ from maze import LinearTrack, OpenField
 from parameters import Parameters
 from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
 import matplotlib.pyplot as plt
+from evb import *
+from q_learning import *
+from transition_handler import *
 
 
 # /!\ 
@@ -21,86 +24,19 @@ import matplotlib.pyplot as plt
 
 """==============================================================================================================="""
 
-def run_pre_explore(m : Union[LinearTrack,OpenField]) :
-    """ Function that updates the transition matrix m.T for the first time
-
-        Arguments:
-            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
-        
-        Returns:      
-    """
-   
-    # letting the agent try every action at each state, to build a transition matrix
-    for s in range(0, m.nb_states) :
-        for a in range(0,4) :
-            if (s not in m.last_states) and (s != m.nb_states-1): # don't explore last state and well
-                m.mdp.current_state = s
-                [stp1, _, _, _] = m.mdp.step(a) 
-                m.listExp = np.append( m.listExp , [[s, a, 0, stp1]], axis=0) # update the list of experiences  
-                m.exp_LastStp1[s,a] = stp1 # update the list of last stp1 obtained with (st,at)
-                m.exp_LastR[s,a] = 0 # update the list of last reward obtained with (st,at)
-                m.T[s,stp1] = m.T[s,stp1] + 1
-    
-    # normalising the transition matrix
-    for i_row in range(m.T.shape[0]) :
-        m.T[i_row] = [float(i)/sum(m.T[i_row]) for i in m.T[i_row]]
-    
-    # dividing when sum(m.T[i_row])=0 causes NaN, so we replace NaNs here with 0
-    m.T[ np.isnan(m.T) ] = 0
-
-    return
-
-"""==============================================================================================================="""
-
-def add_goal2start(m: Union[LinearTrack,OpenField], params : Parameters) :
-    """ Function that adds a transition between the goal and the potential starts to restart an episode
-
-        Arguments:
-            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
-            params -- Parameters from parameters.py : class with the settings of the current simulation 
-        
-        Returns:      
-    """
-
-    for last_state in m.last_states :
-        
-        # if OPEN FIELD
-        if params.start_rand :
-            m.T[last_state,:] = 0 # at first, put all transitions from last_state to 0
-
-            # get a list of all index of valid start states : i.e not last_states or well
-            l_valid_states = [ i for i in range(m.nb_states) if ( (i not in m.last_states) and (i!=m.nb_states-1) )  ]
-
-            # transitions from goal to all possible start states have the same probability
-            for valid_state in l_valid_states :
-                 m.T[last_state,valid_state] = 1/len(l_valid_states)
-        
-        # if LINEAR TRACK
-        else :
-            m.T[last_state,:] = 0  # at first, put all transitions from last_state to 0
-            # Top-Track Last State ==> Bottom-Track Start State
-            if last_state == 18 :
-                m.T[last_state,19] = 1
-            # Bottom-Track Last State ==> Top-Track Start State
-            elif last_state == 1 :
-                m.T[last_state,0] = 1
-
-    return
-
-"""==============================================================================================================="""
-
 def get_action(st, m: Union[LinearTrack,OpenField], params : Parameters) :
-    """ Function that determines which action to take for the current state based on the policy in the settings
+    """ Determines which action to take for the current state based on the policy in the settings
 
-        Arguments:
+        Arguments
+        ----------
             st -- int : the current state
             m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
             params -- Parameters from parameters.py : class with the settings of the current simulation 
         
-        Returns:    
-            at -- int : the action chosen depending on the policy  
+        Returns
+        ----------  
+            at -- int : the action chosen based on the policy  
     """
-
 
     if params.actpolicy == "softmax" :
         probs = softmax(m.Q, st, params.tau)
@@ -113,65 +49,18 @@ def get_action(st, m: Union[LinearTrack,OpenField], params : Parameters) :
 
 """==============================================================================================================="""
 
-def update_transition_n_experience(st,at,r,stp1, m:Union[LinearTrack,OpenField], params:Parameters) :
-    """ Function that ????????????????????????????????????????????????????????????????????????????????????????????????????????????????
-
-        Arguments:
-            st -- int : the current state
-            at -- int : the taken action
-            r -- float : the obtained reward  
-            stp1 -- int : the next state
-            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
-            params -- Parameters from parameters.py : class with the settings of the current simulation 
-        
-        Returns:    
-    """
-
-    targVec = np.zeros( (1, m.nb_states) )
-    targVec[0][stp1] = 1
-    m.T[st,:] = m.T[st,:] + params.Talpha * ( targVec - m.T[st,:] ) # shift T-matrix towards targvec (?) => needs explanation
-
-    m.listExp = np.append( m.listExp , [[st, at, r, stp1]], axis=0) # update the list of experiences  
-    m.exp_LastStp1[st,at] = stp1 # update the list of last stp1 obtained with (st,at)
-    m.exp_LastR[st,at] = r # update the list of last reward obtained with (st,at)
-
-    return
-
-"""==============================================================================================================="""
-
-def update_q_table(st,at,r,stp1, m:Union[LinearTrack,OpenField], params:Parameters) :
-    """ Function that updates the Q-table (Q-learning)
-
-        Arguments:
-            st -- int : the current state
-            at -- int : the taken action
-            r -- float : the obtained reward  
-            stp1 -- int : the next state
-            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
-            params -- Parameters from parameters.py : class with the settings of the current simulation 
-        
-        Returns:    
-    """
-
-    m.etr[st,:] = 0
-    m.etr[st,at] = 1
-    delta = r + params.gamma * np.max( m.Q[stp1] ) - m.Q[st,at]
-    m.Q = m.Q + delta * m.etr
-    m.etr = m.etr * params.lmbda * params.gamma
-
-    return
-
-"""==============================================================================================================="""
 
 def create_plan_exp( m : Union[LinearTrack,OpenField], params : Parameters ) :
-    """ Function that ????????????????????????????????????????????????????????????????????????????????????????????????
+    """ Creates a matrix of tuple (state, action, reward, next_state) based on the previous experiences
 
-        Arguments:
+        Arguments
+        ----------
             m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
             params -- Parameters from parameters.py : class with the settings of the current simulation 
         
-        Returns:    
-            planExp -- list : ????????????????????????????????????????????????????????????????????????????????????????????????
+        Returns
+        ----------    
+            planExp -- matrix ((state X action) X 4) : memory of last reward and next state obtained of each tuple (state, action)
     """
 
 
@@ -204,135 +93,18 @@ def create_plan_exp( m : Union[LinearTrack,OpenField], params : Parameters ) :
 
 """==============================================================================================================="""
 
-def get_gain (Q, planExp, params) :
-    """ Function that calculates the gain of each state and each action based on the current Q-table and planExp
-
-        Arguments:
-            Q -- matrix ( state X action ) : the current Q-table
-            planExp -- list : ????????????????????????????????????????????????????????????????????????????????????????????????
-            params -- Parameters from parameters.py : class with the settings of the current simulation 
-        
-        Returns:   
-            gain -- list : list of the gain calulated for each experience in planExp
-            gain_matrix -- matrix ( state X action) : the maximum gain calculated for each state and each action
-    """
-    # planExp = [ step1, step3, ....]
-    gain = []
-    gain_matrix = np.empty(Q.shape)
-    gain_matrix.fill(np.nan)
-  
-
-    for i in range(len(planExp)) :
-
-        this_exp = planExp[i] #(st,a,r,stp1)
-
-        if len(this_exp.shape) == 1:
-            this_exp = np.expand_dims(this_exp, axis=0)
-
-        gain.append(np.repeat(np.nan, this_exp.shape[0]))
-                
-        for j in range(this_exp.shape[0]):
-                    
-            #Q_mean = np.copy(self.Q[int(this_exp[j, 0])])
-            Q_mean = np.copy(Q)
-
-            Qpre = Q_mean  # NOT USING THIS??
-            
-            # Policy BEFORE backup
-
-            #pA_pre = self.get_act_probs(Q_mean)
-            pA_pre = softmax(Q_mean, int(this_exp[j, 0]), params.tau)
-
-            # Value of state stp1
-            stp1i = int(this_exp[-1, 3])
-
-            #stp1_value = np.sum(np.multiply(Q[stp1i], self.get_act_probs(self.Q[stp1i])))
-            stp1_value = np.sum(np.multiply( Q[stp1i], softmax(Q, stp1i, params.tau) ))               
-
-            act_taken = int(this_exp[j, 1])
-            steps_to_end = this_exp.shape[0] - (j + 1)
-
-            rew = np.dot(np.power(params.gamma, np.arange(0, steps_to_end + 1)), this_exp[j:, 2])
-            Q_target = rew + np.power(params.gamma, steps_to_end + 1) * stp1_value
-            
-            Q_mean[int(this_exp[j, 0]),act_taken] += params.alpha * (Q_target - Q_mean[int(this_exp[j, 0]),act_taken])
-
-            # policy AFTER backup
-            #pA_post = self.get_act_probs(Q_mean)
-            pA_post = softmax(Q_mean, int(this_exp[j, 0]) , params.tau)
-            
-            # calculate gain
-            EV_pre = np.sum(np.multiply(pA_pre, Q_mean[int(this_exp[j, 0])]))
-            EV_post = np.sum(np.multiply(pA_post, Q_mean[int(this_exp[j, 0])]))
-            
-            gain[i][j] = EV_post - EV_pre
-
-            
-            Qpost = Q_mean  
-
-            # Save on gain[s, a]
-            sti = int(this_exp[j, 0])
-            if np.isnan(gain_matrix[sti, act_taken]):
-                gain_matrix[sti, act_taken] = gain[i][j]
-            else:
-                gain_matrix[sti, act_taken] = max(gain_matrix[sti, act_taken], gain[i][j])
-
-
-    return gain, gain_matrix
-
-"""==============================================================================================================="""
-
-def get_need(sti, T, planExp, params) :
-    """ Function that calculates the need for a state depending on planExp and the current mode of the agent (offline or online)
-
-        Arguments:
-            sti -- int : the current state
-            T : matrix ( state X state ) : matrix of transition
-            planExp -- list : ????????????????????????????????????????????????????????????????????????????????????????????????
-            params -- Parameters from parameters.py : class with the settings of the current simulation 
-        
-        Returns:    
-            need -- float : need calculated for the state in parameter 
-    """
-
-    need = []
-
-    if params.onlineVSoffline == "online" :
-        # there is a sti
-        # Calculate the successor representation of the current state
-        SR = np.linalg.inv(np.eye(len(T)) - params.gamma * T) # (I - gammaT)^-1
-        SR_or_SD = SR[sti] 
-  
-    elif params.onlineVSoffline == "offline" :
-        # The agent is asleep, there is not sti
-        # Calculate eigenvectors and eigenvalues
-        SR_or_SD = 0
-
-    else :
-        print("Error get_need : params.onlineVSoffline unknown")
-
-    # Calculate the need term for each episode and each step
-    for i_step in range (len(planExp)) :
-        this_exp = planExp[i_step] #(st,a,r,stp1)
-        if len(this_exp.shape) == 1:
-                this_exp = np.expand_dims(this_exp, axis=0)
-        need.append(np.repeat(np.nan, this_exp.shape[0]))
-        for j in range(this_exp.shape[0]):
-            need[i_step][j] = SR_or_SD[int(this_exp[j, 0])]
-    
-    return need
-
-"""==============================================================================================================="""
 
 def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
-    """ Function that calculates the need for a state depending on planExp and the current mode of the agent (offline or online)
+    """ Calculates the need for a state depending on planExp and the current mode of the agent (offline or online)
 
-        Arguments:
+        Arguments
+        ----------
             m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
             params -- Parameters from parameters.py : class with the settings of the current simulation 
         
-        Returns:    
-            list_steps -- list of tuple (state, action, reward, next_step) : list of each step taken by the agent during the simulation
+        Returns
+        ----------
+            list_steps -- list of int : list of number of steps taken by the agent during the simulation for each episode
     """
 
     m.reInit()
@@ -436,9 +208,9 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                     EVB[i] = np.sum( need[i][0] * max( gain[i][-1], params.baselineGain ) )
                 
                 opportCost = np.nanmean( m.listExp[:,2] )
-                EVBthresh = min(opportCost , params.EVBthresh)
+                EVBthreshold = min(opportCost , params.EVBthreshold)
 
-                if max(EVB) > EVBthresh :
+                if max(EVB) > EVBthreshold :
                     maxEVB_idx = np.argwhere(EVB == max(EVB))
 
                     if len(maxEVB_idx) > 1 :

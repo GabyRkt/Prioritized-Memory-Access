@@ -5,14 +5,23 @@ class Parameters :
 
   def __init__(self) :
     
-    self.MAX_N_STEPS = int(1e5)       # maximum number of steps in a simulation
-    self.MAX_N_EPISODES = 50          # maximum number of episodes in a simulation
+    self.MAX_N_STEPS = int(1e5)       
+    "maximum number of steps in a simulation"
+
+    self.MAX_N_EPISODES = 50          
+    "maximum number of episodes in a simulation"
+
+    self.start_rand = True
+    "????????????????????????????????????????????????????????????????????????????????????????????????????????????"
 
 
     #params for pre-exploration :
 
-    self.preExplore = True            # let the agent explore the maze without rewards before the first episode
-    self.Tgoal2start = True           # include a transition from goal to start in transition matrix
+    self.preExplore = True            
+    "lets the agent explore the maze without rewards before the first episode"
+
+    self.Tgoal2start = True           
+    "includes a transition from goal to start in transition matrix"
 
 
     #params for action selection policies :
@@ -47,14 +56,28 @@ class Parameters :
 
     #params for planning:
 
-    self.planOnlyAtGorS = True        # indicates if the planning should only happen if the agent is at the start or goal state
-    self.Nplan = 20                   # number of steps in a planning
-    self.remove_samestate = True      # remove actions that lead to the same state (i.e. hitting a wall)
-    self.expandFurther = True         # expand the last backup further
+    self.planOnlyAtGorS = True        
+    "indicates if the planning should only happen if the agent is at the start or goal state"
+
+    self.Nplan = 20                   
+    "number of steps in a planning (planning_backup)"
+
+    self.remove_samestate = True      
+    "removes actions that lead to the same state (i.e. hitting a wall)"
+    
+    self.expandFurther = True         
+    "expand the last backup further"
+
     self.onlineVSoffline = "online"   # "online" = Successor Representation
-    self.allowLoops = False           # allow loops in n-step backups
-    self.baselineGain = int(1e10)     # gain is set to at least this value
-    self.EVBthresh = 0                # minimum EVB so that planning is performed
+
+    self.allowLoops = False        
+    "allow loops in n-step backups"
+
+    self.baselineGain = int(1e10)     
+    "gain is set to at least this value"
+
+    self.EVBthreshold = 0                
+    "minimum EVB so that planning is performed"
 
 
 
