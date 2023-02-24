@@ -22,6 +22,13 @@ import matplotlib.pyplot as plt
 """==============================================================================================================="""
 
 def run_pre_explore(m : Union[LinearTrack,OpenField]) :
+    """ Function that updates the transition matrix m.T from the first time
+
+        Arguments:
+            m -- Union[LinearTrack,OpenField] from maze.py
+        
+        Returns:      
+    """
    
     # letting the agent try every action at each state, to build a transition matrix
     for s in range(0, m.nb_states) :
