@@ -22,10 +22,10 @@ import matplotlib.pyplot as plt
 """==============================================================================================================="""
 
 def run_pre_explore(m : Union[LinearTrack,OpenField]) :
-    """ Function that updates the transition matrix m.T from the first time
+    """ Function that updates the transition matrix m.T for the first time
 
         Arguments:
-            m -- Union[LinearTrack,OpenField] from maze.py
+            m -- Union[LinearTrack,OpenField] from maze.py (class with the maze and the agent)
         
         Returns:      
     """
@@ -53,6 +53,14 @@ def run_pre_explore(m : Union[LinearTrack,OpenField]) :
 """==============================================================================================================="""
 
 def add_goal2start(m: Union[LinearTrack,OpenField], params : Parameters) :
+    """ Function that adds a transition between the goal and the potential starts to restart an episode
+
+        Arguments:
+            m -- Union[LinearTrack,OpenField] from maze.py (class with the maze and the agent)
+            params -- Parameters from parameters.py (class with the parameters of the current simulation)
+        
+        Returns:      
+    """
 
     for last_state in m.last_states :
         
@@ -82,6 +90,17 @@ def add_goal2start(m: Union[LinearTrack,OpenField], params : Parameters) :
 """==============================================================================================================="""
 
 def get_action(st, m: Union[LinearTrack,OpenField], params : Parameters) :
+    """ Function that determines what action to take for the current state based on the policy in the settings
+
+        Arguments:
+            st -- int : the current state
+            m -- Union[LinearTrack,OpenField] from maze.py (class with the maze and the agent)
+            params -- Parameters from parameters.py (class with the parameters of the current simulation)
+        
+        Returns:    
+            at -- int : the action chosen depending on the policy  
+    """
+
 
     if params.actpolicy == "softmax" :
         probs = softmax(m.Q, st, params.tau)
@@ -95,6 +114,18 @@ def get_action(st, m: Union[LinearTrack,OpenField], params : Parameters) :
 """==============================================================================================================="""
 
 def update_transition_n_experience(st,at,r,stp1, m:Union[LinearTrack,OpenField], params:Parameters) :
+    """ Function that ????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+
+        Arguments:
+            st -- int : the current state
+            at -- int : the taken action
+            r -- float : the obtained reward  
+            stp1 -- int : the next state
+            m -- Union[LinearTrack,OpenField] from maze.py (class with the maze and the agent)
+            params -- Parameters from parameters.py (class with the parameters of the current simulation)
+        
+        Returns:    
+    """
 
     targVec = np.zeros( (1, m.nb_states) )
     targVec[0][stp1] = 1
@@ -109,6 +140,18 @@ def update_transition_n_experience(st,at,r,stp1, m:Union[LinearTrack,OpenField],
 """==============================================================================================================="""
 
 def update_q_table(st,at,r,stp1, m:Union[LinearTrack,OpenField], params:Parameters) :
+    """ Function that updates the Q-table (Q-learning)
+
+        Arguments:
+            st -- int : the current state
+            at -- int : the taken action
+            r -- float : the obtained reward  
+            stp1 -- int : the next state
+            m -- Union[LinearTrack,OpenField] from maze.py (class with the maze and the agent)
+            params -- Parameters from parameters.py (class with the parameters of the current simulation)
+        
+        Returns:    
+    """
 
     m.etr[st,:] = 0
     m.etr[st,at] = 1
