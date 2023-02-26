@@ -53,7 +53,7 @@ def get_gain (Q, planExp, params) :
             stp1i = int(this_exp[-1, 3])
 
             #stp1_value = np.sum(np.multiply(Q[stp1i], self.get_act_probs(self.Q[stp1i])))
-            stp1_value = np.sum(np.multiply( Q[stp1i], softmax(Q, stp1i, params.tau) ))               
+            stp1_value = np.max(Q[stp1i])                
 
             act_taken = int(this_exp[j, 1])
             steps_to_end = this_exp.shape[0] - (j + 1)

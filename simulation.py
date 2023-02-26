@@ -130,6 +130,8 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
         step_i = 0 # step counter
         done = False # this will be True when the agent finds a reward, or when MAX_N_STEPS has been reached
 
+        print("running : [ episode "+str(ep_i)+" ]",end='\r')
+
         while not done:  
 
             # [ CLASSIC Q-LEARNING ]
@@ -171,41 +173,53 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                     seqStart = np.argwhere(planning_backups[:, 4] == 1)[-1][0]
                     seqSoFar = planning_backups[seqStart:, 0:4]
                     
-                    sn = int( seqSoFar[-1, 3] )  # Final state reached in the last planning st
+                    sn = int( seqSoFar[-1, 3] )  # Final state reached in the last planning st...
 
-                    if params.onlineVSoffline == "online" : # agent is awake 
-                        an = get_action(sn,m,params)
-                  
-                    else : # agent is asleep 
-                        probs = np.zeros( np.size(m.Q[sn]) )
-                        probs[ m.Q[sn] == max( m.Q[sn] ) ] =  1 / ( sum(m.Q[sn]) == max(m.Q[sn]) ) 
-                        an = sample_categorical(probs)
+                    if sn != m.nb_states -1 : # ... but dont expand the n-step backup if sn is well !
+                        if params.onlineVSoffline == "online" : # agent is awake 
+                            an = get_action(sn,m,params)
+                    
+                        else : # agent is asleep 
+                            probs = np.zeros( np.size(m.Q[sn]) )
+                            probs[ m.Q[sn] == max( m.Q[sn] ) ] =  1 / ( sum(m.Q[sn]) == max(m.Q[sn]) ) 
+                            an = sample_categorical(probs)
 
-                    snp1 = m.exp_LastStp1[sn,an]
-                    rn = m.exp_LastR[sn,an]
+                        snp1 = m.exp_LastStp1[sn,an]
+                        rn = m.exp_LastR[sn,an]
 
-                    step_isNaN = np.isnan( m.exp_LastStp1[sn,an] ) or np.isnan( m.exp_LastR[sn,an] )
-                    step_isRepeated = np.isin( snp1 , [ seqSoFar[:, 0], seqSoFar[:, 3] ] )
+                        step_isNaN = np.isnan( m.exp_LastStp1[sn,an] ) or np.isnan( m.exp_LastR[sn,an] )
+                        step_isRepeated = np.isin( snp1 , [ seqSoFar[:, 0], seqSoFar[:, 3] ] )
 
-                    if (not step_isNaN) and (params.allowLoops or (not step_isRepeated)) :
-                        expanded_exp = np.array( [sn, an, rn, snp1] )
-                        seqUpdated = np.append( seqSoFar, [expanded_exp], axis=0 )
-                        planExp.append(seqUpdated)
+                        if (not step_isNaN) and (params.allowLoops or (not step_isRepeated)) :
+                            expanded_exp = np.array( [sn, an, rn, snp1] )
+                            seqUpdated = np.append( seqSoFar, [expanded_exp], axis=0 )
+                            planExp.append(seqUpdated)
                 
                 
                 # === Gain term ===
-                [ gain , saGain ] = get_gain(m.Q,planExp,params)
+                if params.allgain2one : # we set all gain to one to simulate Random Replay
+                    gain = list(np.ones((len(planExp), 1)))
+                else :
+                    [ gain , saGain ] = get_gain(m.Q,planExp,params)
                 
+
                 # === Need term ===
-                need = get_need(st, m.T, planExp, params)
+                if params.allneed2one : # we set all need to one to simulate Random Replay
+                    need = list(np.ones((len(planExp), 1)))
+                else :
+                    need = get_need(st, m.T, planExp, params)
                   
 
                 # === EVB ===  GET MAX EVB 
-                EVB = np.empty( len(planExp ) )
-                EVB.fill(np.nan)
+                EVB = np.full((len(planExp)), np.nan)
 
                 for i in range( len(planExp) ) :
-                    EVB[i] = np.sum( need[i][0] * max( gain[i][-1], params.baselineGain ) )
+                    if len(planExp[i].shape) == 1:
+                        EVB[i] = need[i][-1] * max( gain[i], params.baselineGain ) 
+                    else :
+                        EVB[i] = 0
+                        for x in range(len(planExp[i])) :
+                            EVB[i] += need[i][-1] * max(gain[i][-1], params.baselineGain)
                 
                 opportCost = np.nanmean( m.listExp[:,2] )
                 EVBthreshold = min(opportCost , params.EVBthreshold)
@@ -230,13 +244,8 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                                         
                     for n in range(plan_exp_arr_max.shape[0]):
                         # Retrieve information from this experience
-                        tmp = plan_exp_arr_max[n]
-                        if len(plan_exp_arr_max[n]) == 1 :
-                            tmp = plan_exp_arr_max[n][0]
-                            
-
-                        s_plan = int(tmp[0])
-                        a_plan = int(tmp[1])
+                        s_plan = int(plan_exp_arr_max[n][0])
+                        a_plan = int(plan_exp_arr_max[n][1])
                         
                         # Individual rewards from this step to end of trajectory
                         rew_to_end = plan_exp_arr_max[n:][:, 2]
@@ -249,12 +258,11 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                         r_plan = np.dot(np.power(params.gamma, np.arange(0, n_plan)), rew_to_end)
 
                         # ADD PLAN Q_LEARNING UPDATES TO Q_LEARNING FUNCTION
-                        stp1_value = np.sum(np.multiply(m.Q[stp1_plan], softmax(m.Q,stp1_plan,params.tau)  ))
+                        stp1_value = np.max(m.Q[stp1_plan])
                   
                         Q_target = r_plan + (params.gamma ** n_plan) * stp1_value
                       
                         m.Q[s_plan, a_plan] += params.alpha * (Q_target - m.Q[s_plan, a_plan])
-
 
                     if planning_backups.shape[0] > 0:
                         planning_backups = np.vstack([planning_backups, np.append(plan_exp_arr_max, plan_exp_arr_max.shape[0])])
@@ -282,17 +290,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
         list_steps.append(step_i)
 
+    print()
     return list_steps
 
 
-p = Parameters()
-m = OpenField()
-
-p.Nplan = 20
-
-test_list = run_simulation(m,p)
-
-print("\n\n", test_list[0])
-
-plt.plot(test_list)
-plt.show()
