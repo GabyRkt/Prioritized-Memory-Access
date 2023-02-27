@@ -93,6 +93,34 @@ def create_plan_exp( m : Union[LinearTrack,OpenField], params : Parameters ) :
 
 """==============================================================================================================="""
 
+def expand_plan_exp(planning_backups, planExp, m : Union[OpenField,LinearTrack], params) :
+    seqStart = np.argwhere(planning_backups[:, 4] == 1)[-1][0]
+    seqSoFar = planning_backups[seqStart:, 0:4]
+    
+    sn = int( seqSoFar[-1, 3] )  # Final state reached in the last planning st...
+
+    if sn != m.nb_states -1 : # ... but dont expand the n-step backup if sn is well !
+
+        if params.onlineVSoffline == "online" : # agent is awake 
+            an = get_action(sn,m,params)
+    
+        else : # agent is asleep 
+            probs = np.zeros( np.size(m.Q[sn]) )
+            probs[ m.Q[sn] == max( m.Q[sn] ) ] =  1 / ( sum(m.Q[sn]) == max(m.Q[sn]) ) 
+            an = sample_categorical(probs)
+
+        snp1 = m.exp_LastStp1[sn,an]
+        rn = m.exp_LastR[sn,an]
+
+        step_isNaN = np.isnan( m.exp_LastStp1[sn,an] ) or np.isnan( m.exp_LastR[sn,an] )
+        step_isRepeated = np.isin( snp1 , [ seqSoFar[:, 0], seqSoFar[:, 3] ] )
+
+        if (not step_isNaN) and (params.allowLoops or (not step_isRepeated)) :
+            expanded_exp = np.array( [sn, an, rn, snp1] )
+            seqUpdated = np.append( seqSoFar, [expanded_exp], axis=0 )
+            planExp.append(seqUpdated)
+
+"""==============================================================================================================="""
 
 def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
     """ Calculates the need for a state depending on planExp and the current mode of the agent (offline or online)
@@ -138,18 +166,14 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
             # Action Selection with softmax or epsilon-greedy, using Q-Learning
             at = get_action(st, m, params)
-            
             # Perform Action : st , at  
             [stp1, r, done, _] = m.mdp.step(at)
-            
             # Update Transition Matrix & Experience List with stp1 and r
             update_transition_n_experience(st,at,r,stp1, m, params)
-            
             # Update Q-table : off-policy Q-learning using eligibility trace
             update_q_table(st,at,r,stp1, m, params)
 
             # [ PLANNING ]
-
             p = 1 # planning step counter
 
             if params.planOnlyAtGorS : # only plan when agent is in a start/last state...
@@ -169,32 +193,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                 planExp = list(planExp)
 
                 if params.expandFurther and planning_backups.shape[0] > 0 :
-                    
-                    seqStart = np.argwhere(planning_backups[:, 4] == 1)[-1][0]
-                    seqSoFar = planning_backups[seqStart:, 0:4]
-                    
-                    sn = int( seqSoFar[-1, 3] )  # Final state reached in the last planning st...
-
-                    if sn != m.nb_states -1 : # ... but dont expand the n-step backup if sn is well !
-                        if params.onlineVSoffline == "online" : # agent is awake 
-                            an = get_action(sn,m,params)
-                    
-                        else : # agent is asleep 
-                            probs = np.zeros( np.size(m.Q[sn]) )
-                            probs[ m.Q[sn] == max( m.Q[sn] ) ] =  1 / ( sum(m.Q[sn]) == max(m.Q[sn]) ) 
-                            an = sample_categorical(probs)
-
-                        snp1 = m.exp_LastStp1[sn,an]
-                        rn = m.exp_LastR[sn,an]
-
-                        step_isNaN = np.isnan( m.exp_LastStp1[sn,an] ) or np.isnan( m.exp_LastR[sn,an] )
-                        step_isRepeated = np.isin( snp1 , [ seqSoFar[:, 0], seqSoFar[:, 3] ] )
-
-                        if (not step_isNaN) and (params.allowLoops or (not step_isRepeated)) :
-                            expanded_exp = np.array( [sn, an, rn, snp1] )
-                            seqUpdated = np.append( seqSoFar, [expanded_exp], axis=0 )
-                            planExp.append(seqUpdated)
-                
+                    expand_plan_exp(planning_backups, planExp, m, params)
                 
                 # === Gain term ===
                 if params.allgain2one : # we set all gain to one to simulate Random Replay
@@ -202,24 +201,14 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                 else :
                     [ gain , saGain ] = get_gain(m.Q,planExp,params)
                 
-
                 # === Need term ===
                 if params.allneed2one : # we set all need to one to simulate Random Replay
                     need = list(np.ones((len(planExp), 1)))
                 else :
                     need = get_need(st, m.T, planExp, params)
                   
-
-                # === EVB ===  GET MAX EVB 
-                EVB = np.full((len(planExp)), np.nan)
-
-                for i in range( len(planExp) ) :
-                    if len(planExp[i].shape) == 1:
-                        EVB[i] = need[i][-1] * max( gain[i], params.baselineGain ) 
-                    else :
-                        EVB[i] = 0
-                        for x in range(len(planExp[i])) :
-                            EVB[i] += need[i][-1] * max(gain[i][-1], params.baselineGain)
+                # === EVB ===  
+                EVB = calculate_evb(planExp, gain, need, params)
                 
                 opportCost = np.nanmean( m.listExp[:,2] )
                 EVBthreshold = min(opportCost , params.EVBthreshold)
