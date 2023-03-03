@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from evb import *
 from q_learning import *
 from transition_handler import *
+import random
 
 
 # /!\ 
