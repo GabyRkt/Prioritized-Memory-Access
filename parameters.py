@@ -25,10 +25,10 @@ class Parameters :
 
     #params for action selection policies :
 
-    self.actpolicy = "softmax"        
+    self.actpolicy = "egreedy"        
     "softmax or egreedy"
 
-    self.epsilon = 0.1                
+    self.epsilon = 0               
     "exploration rate for egreedy"
 
     self.tau = 1/5                    
@@ -43,7 +43,7 @@ class Parameters :
     self.alpha = 1.0  
     "learning rate"  
     
-    self.lmbda = 0.1
+    self.lmbda = 0
     "eligibility trace's decay rate"
 
 
