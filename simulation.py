@@ -158,9 +158,9 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
         step_i = 0 # step counter
         done = False # this will be True when the agent finds a reward, or when MAX_N_STEPS has been reached
 
-        print("running : [ episode "+str(ep_i)+" ]",end='\r')
-
         while not done:  
+            
+            print("running : [ episode "+str(ep_i)+" ] - step "+str(step_i),end='\r')
 
             # [ CLASSIC Q-LEARNING ]
 
