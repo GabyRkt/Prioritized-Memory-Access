@@ -25,12 +25,16 @@ def plot_fig1d(mazetype : str = "OpenField", fig2plot : list = ["pr","rr","nr"],
     
     # NO REPLAY PARAMETERS
     p_nr = Parameters()
+    p_nr.actpolicy = "egreedy"
+    p_nr.epsilon = 0
     p_nr.Nplan = 0
 
     no_replay = [0] * 50
 
     # RANDOM REPLAY PARAMETERS
     p_rr = Parameters()
+    p_rr.actpolicy = "egreedy"
+    p_rr.epsilon = 0
     p_rr.Nplan = 20
     p_rr.allgain2one = True
     p_rr.allneed2one = True
@@ -39,6 +43,8 @@ def plot_fig1d(mazetype : str = "OpenField", fig2plot : list = ["pr","rr","nr"],
 
     # RANDOM REPLAY PARAMETERS
     p_pr = Parameters()
+    p_pr.actpolicy = "egreedy"
+    p_pr.epsilon = 0
     p_pr.Nplan = 20
     p_pr.allgain2one = False
     p_pr.allneed2one = False
@@ -81,7 +87,7 @@ def plot_fig1d(mazetype : str = "OpenField", fig2plot : list = ["pr","rr","nr"],
     plt.show()
 
 
-plot_fig1d("OpenField",["nr"],10)
+plot_fig1d("OpenField",["nr","rr","pr"],1000)
 
 
 
