@@ -72,7 +72,7 @@ class Parameters :
     self.allowLoops = False        
     "allow loops in n-step backups"
 
-    self.baselineGain = int(1e10)     
+    self.baselineGain = int(1e-10)     
     "gain is set to at least this value"
 
     self.EVBthreshold = 0                
