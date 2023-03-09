@@ -9,7 +9,8 @@ from evb import *
 from q_learning import *
 from transition_handler import *
 import random
-
+import seaborn as sns
+import time
 
 # /!\ 
 
@@ -81,7 +82,7 @@ def create_plan_exp( m : Union[LinearTrack,OpenField], params : Parameters ) :
     planExp = np.empty( (0,4) )
 
     for a in range(m.action_space.n) :
-        for s in range(m.nb_states-1) :
+        for s in range(m.nb_states) :
             exp = np.array( [ s, a, m.exp_LastR[s,a], m.exp_LastStp1[s,a] ] ) 
             planExp = np.append( planExp, [exp], axis=0 )
     
@@ -100,26 +101,24 @@ def expand_plan_exp(planning_backups, planExp, m : Union[OpenField,LinearTrack],
     
     sn = int( seqSoFar[-1, 3] )  # Final state reached in the last planning st...
 
-    if sn != m.nb_states -1 : # ... but dont expand the n-step backup if sn is well !
+    if params.onlineVSoffline == "online" : # agent is awake 
+        an = get_action(sn,m,params)
 
-        if params.onlineVSoffline == "online" : # agent is awake 
-            an = get_action(sn,m,params)
-    
-        else : # agent is asleep 
-            probs = np.zeros( np.size(m.Q[sn]) )
-            probs[ m.Q[sn] == max( m.Q[sn] ) ] =  1 / ( sum(m.Q[sn]) == max(m.Q[sn]) ) 
-            an = sample_categorical(probs)
+    else : # agent is asleep 
+        probs = np.zeros( np.size(m.Q[sn]) )
+        probs[ m.Q[sn] == max( m.Q[sn] ) ] =  1 / ( sum(m.Q[sn]) == max(m.Q[sn]) ) 
+        an = sample_categorical(probs)
 
-        snp1 = m.exp_LastStp1[sn,an]
-        rn = m.exp_LastR[sn,an]
+    snp1 = m.exp_LastStp1[sn,an]
+    rn = m.exp_LastR[sn,an]
 
-        step_isNaN = np.isnan( m.exp_LastStp1[sn,an] ) or np.isnan( m.exp_LastR[sn,an] )
-        step_isRepeated = np.isin( snp1 , [ seqSoFar[:, 0], seqSoFar[:, 3] ] )
+    step_isNaN = np.isnan( m.exp_LastStp1[sn,an] ) or np.isnan( m.exp_LastR[sn,an] )
+    step_isRepeated = np.isin( snp1 , [ seqSoFar[:, 0], seqSoFar[:, 3] ] )
 
-        if (not step_isNaN) and (params.allowLoops or (not step_isRepeated)) :
-            expanded_exp = np.array( [sn, an, rn, snp1] )
-            seqUpdated = np.append( seqSoFar, [expanded_exp], axis=0 )
-            planExp.append(seqUpdated)
+    if (not step_isNaN) and (params.allowLoops or (not step_isRepeated)) :
+        expanded_exp = np.array( [sn, an, rn, snp1] )
+        seqUpdated = np.append( seqSoFar, [expanded_exp], axis=0 )
+        planExp.append(seqUpdated)
 
 """==============================================================================================================="""
 
@@ -145,10 +144,12 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
     # Have the agent freely explore the maze without rewards to learn action consequences
     if params.preExplore : 
         run_pre_explore(m)
+
     
     # Add transitions from goal states to start states : this loops the need value? => needs explanation
     if params.Tgoal2start: 
         add_goal2start(m, params)
+
 
     #  [ EXPLORATION ]
 
@@ -156,12 +157,14 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
     st = m.reset()
 
     for ep_i in range(params.MAX_N_EPISODES) :
+        
         step_i = 0 # step counter
         done = False # this will be True when the agent finds a reward, or when MAX_N_STEPS has been reached
+        
+        print("running : [ episode "+str(ep_i)+ " ]",end='\r')
 
         while not done:  
             
-            print("running : [ episode "+str(ep_i)+" ] - step "+str(step_i),end='\r')
 
             # [ CLASSIC Q-LEARNING ]
 
@@ -169,16 +172,18 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
             at = get_action(st, m, params)
             # Perform Action : st , at  
             [stp1, r, done, _] = m.mdp.step(at)
+
             # Update Transition Matrix & Experience List with stp1 and r
             update_transition_n_experience(st,at,r,stp1, m, params)
             # Update Q-table : off-policy Q-learning using eligibility trace
             update_q_table(st,at,r,stp1, m, params)
 
+
             # [ PLANNING ]
             p = 1 # planning step counter
 
             if params.planOnlyAtGorS : # only plan when agent is in a start/last state...
-                if not ( (st in m.maze.last_states) or (step_i == 0) ):
+                if not ( (stp1 in m.maze.last_states) or (step_i == 0) ):
                     p = np.Inf
             
             # ...but don't if this is the 1st episode and the reward hasn't been found 
@@ -189,94 +194,111 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
             planning_backups = np.empty( (0,5) )
 
             while p <= params.Nplan :
-                # DYNA implementation
-                if params.allneed2one and params.allgain2one :
+                    
+                # # DYNA implementation
+                # if params.allneed2one and params.allgain2one :
                    
-                    dyna = random.randint( 0, np.size(m.listExp,axis=0)-1 )
-                    while int(m.listExp[dyna][0]) == m.maze.well :
-                        dyna = random.randint( 0, np.size(m.listExp,axis=0)-1 )
+                #     dyna = random.randint( 0, np.size(m.listExp,axis=0)-1 )
+                    
+                #     while (int(m.listExp[dyna][0]) in m.last_states) or (int(m.listExp[dyna][0])==int(m.listExp[dyna][3]))  :
+                #         dyna = random.randint( 0, np.size(m.listExp,axis=0)-1 )
 
-                    chosen_exp = m.listExp[dyna]
-                    s_dyna = int(chosen_exp[0])
-                    a_dyna = int(chosen_exp[1])                 
-                    r_dyna = chosen_exp[2]   
-                    stp1_dyna = int(chosen_exp[3])   
-                  
-                    update_q_table(s_dyna, a_dyna, r_dyna, stp1_dyna, m, params)
-                
+                #     chosen_exp = m.listExp[dyna]
+                #     s_dyna = int(chosen_exp[0])
+                #     a_dyna = int(chosen_exp[1]) 
+                #     r_dyna = m.exp_LastR[ s_dyna , a_dyna ]   
+                #     stp1_dyna = int( m.exp_LastStp1[ s_dyna , a_dyna ] )  
+                #     update_q_table(s_dyna, a_dyna, r_dyna, stp1_dyna, m, params) 
+
+
+                # create a matrix that records the reward r and next-state stp1 of each (st,at) 
+                planExp = create_plan_exp(m,params)
+                planExp = list(planExp)
+
+                if params.expandFurther and planning_backups.shape[0] > 0 :
+                    expand_plan_exp(planning_backups, planExp, m, params)
+
+                # === Gain term ===
+                if params.allgain2one : # we set all gain to one to simulate Random Replay
+                    gain = list(np.ones((len(planExp), 1)))
                 else :
-                    # create a matrix that records the reward r and next-state stp1 of each (st,at) 
-                    planExp = create_plan_exp(m,params)
-                    planExp = list(planExp)
+                    [ gain , saGain ] = get_gain(m.Q,planExp,params)
 
-                    if params.expandFurther and planning_backups.shape[0] > 0 :
-                        expand_plan_exp(planning_backups, planExp, m, params)
 
-                    # === Gain term ===
-                    if params.allgain2one : # we set all gain to one to simulate Random Replay
-                        gain = list(np.ones((len(planExp), 1)))
-                    else :
-                        [ gain , saGain ] = get_gain(m.Q,planExp,params)
+                # === Need term ===
+                if params.allneed2one : # we set all need to one to simulate Random Replay
+                    need = list(np.ones((len(planExp), 1)))
+                else :
+                    need = get_need(st, m.T, planExp, params)
 
-                    # === Need term ===
-                    if params.allneed2one : # we set all need to one to simulate Random Replay
-                        need = list(np.ones((len(planExp), 1)))
-                    else :
-                        need = get_need(st, m.T, planExp, params)
+                # === EVB ===  
+                EVB = calculate_evb(planExp, gain, need, params)
 
-                    # === EVB ===  
-                    EVB = calculate_evb(planExp, gain, need, params)
+                opportCost = np.nanmean( m.listExp[:,2] )
+                EVBthreshold = min(opportCost , params.EVBthreshold)
+    
+                if max(EVB) > EVBthreshold :
+                    maxEVB_idx = np.argwhere(EVB == max(EVB))
 
-                    opportCost = np.nanmean( m.listExp[:,2] )
-                    EVBthreshold = min(opportCost , params.EVBthreshold)
-
-                    if max(EVB) > EVBthreshold :
-                        maxEVB_idx = np.argwhere(EVB == max(EVB))
-
+                    if len(maxEVB_idx) > 1 :
+                        n_steps = np.array([arr.shape[0] if len(arr.shape) > 1 else 1 for arr in planExp])
+                        maxEVB_idx = maxEVB_idx[n_steps[maxEVB_idx] == min(n_steps[maxEVB_idx])]
                         if len(maxEVB_idx) > 1 :
-                            n_steps = np.array([arr.shape[0] if len(arr.shape) > 1 else 1 for arr in planExp])
-                            maxEVB_idx = maxEVB_idx[n_steps[maxEVB_idx] == min(n_steps[maxEVB_idx])]
-                            if len(maxEVB_idx) > 1 :
-                                maxEVB_idx = maxEVB_idx[np.random.randint(len(maxEVB_idx))]  
-                        else:
-                            maxEVB_idx = maxEVB_idx[0][0]
+                            maxEVB_idx = maxEVB_idx[np.random.randint(len(maxEVB_idx))]  
+                            
+                    else:
+                        maxEVB_idx = maxEVB_idx[0][0]
 
-                        plan_exp_arr = np.array(planExp, dtype=object)
+                    plan_exp_arr = np.array(planExp, dtype=object)
 
-                        if len(plan_exp_arr[maxEVB_idx].shape) == 1:
-                            plan_exp_arr_max = np.expand_dims(plan_exp_arr[maxEVB_idx], axis=0)
-                        else:
-                            plan_exp_arr_max = np.expand_dims(plan_exp_arr[maxEVB_idx][-1], axis=0)
 
-                        for n in range(plan_exp_arr_max.shape[0]):
-                            # Retrieve information from this experience
-                            s_plan = int(plan_exp_arr_max[n][0])
-                            a_plan = int(plan_exp_arr_max[n][1])
+                    if len(plan_exp_arr[maxEVB_idx].shape) == 1:
+                        plan_exp_arr_max = np.expand_dims(plan_exp_arr[maxEVB_idx], axis=0)
+                    else:
+                        plan_exp_arr_max = np.expand_dims(plan_exp_arr[maxEVB_idx][-1], axis=0)
 
-                            # Individual rewards from this step to end of trajectory
-                            rew_to_end = plan_exp_arr_max[n:][:, 2]
-                            # Notice the use of '-1' instead of 'n', meaning that stp1_plan is the final state of the
-                            # trajectory
-                            stp1_plan = int(plan_exp_arr_max[-1][3])
+                    for n in range(plan_exp_arr_max.shape[0]):
+                        # Retrieve information from this experience
+                        s_plan = int(plan_exp_arr_max[n][0])
+                        a_plan = int(plan_exp_arr_max[n][1])
 
-                            # Discounted cumulative reward from this step to end of trajectory
-                            n_plan = np.size(rew_to_end)
-                            r_plan = np.dot(np.power(params.gamma, np.arange(0, n_plan)), rew_to_end)
+                        # Individual rewards from this step to end of trajectory
+                        rew_to_end = plan_exp_arr_max[n:][:, 2]
+                        # Notice the use of '-1' instead of 'n', meaning that stp1_plan is the final state of the
+                        # trajectory
+                        
+                        stp1_plan = int(plan_exp_arr_max[-1][3])
 
-                            # ADD PLAN Q_LEARNING UPDATES TO Q_LEARNING FUNCTION
-                            stp1_value = np.max(m.Q[stp1_plan])
+                        if stp1_plan >= m.nb_states :
+                            print(plan_exp_arr_max)
+                            print()
+                            print(m.exp_LastR[s_plan,a_plan])
+                            print(m.exp_LastStp1[s_plan,a_plan])
+                            print()
+                            for elem in planExp:
+                                print(elem)
+                        """ DISPLAY NEED AND GAIN """
 
-                            Q_target = r_plan + (params.gamma ** n_plan) * stp1_value
 
-                            m.Q[s_plan, a_plan] += params.alpha * (Q_target - m.Q[s_plan, a_plan])
+                        # Discounted cumulative reward from this step to end of trajectory
+                        n_plan = np.size(rew_to_end)
+                        r_plan = np.dot(np.power(params.gamma, np.arange(0, n_plan)), rew_to_end)
 
-                        if planning_backups.shape[0] > 0:
-                            planning_backups = np.vstack([planning_backups, np.append(plan_exp_arr_max, plan_exp_arr_max.shape[0])])
-                        elif planning_backups.shape[0] == 0:
-                            planning_backups = np.append(plan_exp_arr_max,plan_exp_arr_max.shape[0]).reshape(1, planning_backups.shape[1])
-                        else:
-                            err_msg = 'planning_backups does not have the correct shape. It is {} but should have a length equal to 1 or 2, e.g. (5,) or (2, 5)'.format(planning_backups.shape)
-                            raise ValueError(err_msg)
+                        # ADD PLAN Q_LEARNING UPDATES TO Q_LEARNING FUNCTION
+                        stp1_value = np.max(m.Q[stp1_plan])
+
+                        Q_target = r_plan + (params.gamma ** n_plan) * stp1_value
+
+                        m.Q[s_plan, a_plan] = m.Q[s_plan, a_plan] + params.alpha * (Q_target - m.Q[s_plan, a_plan])
+                       
+
+                    if planning_backups.shape[0] > 0:
+                        planning_backups = np.vstack([planning_backups, np.append(plan_exp_arr_max, plan_exp_arr_max.shape[0])])
+                    elif planning_backups.shape[0] == 0:
+                        planning_backups = np.append(plan_exp_arr_max,plan_exp_arr_max.shape[0]).reshape(1, planning_backups.shape[1])
+                    else:
+                        err_msg = 'planning_backups does not have the correct shape. It is {} but should have a length equal to 1 or 2, e.g. (5,) or (2, 5)'.format(planning_backups.shape)
+                        raise ValueError(err_msg)
                 
                 p += 1
             #============================== COMPLETE STEP ==================================#
@@ -296,7 +318,6 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
         list_steps.append(step_i)
 
-    print()
     return list_steps
 
 

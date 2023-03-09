@@ -1,6 +1,7 @@
 
 from maze import LinearTrack, OpenField
 from parameters import Parameters
+import numpy as np
 from simulation import run_simulation
 import matplotlib.pyplot as plt
 
@@ -74,20 +75,24 @@ def plot_fig1d(mazetype : str = "OpenField", fig2plot : list = ["pr","rr","nr"],
     
 
     # PLOT FIGURES
+    xx = [i for i in range(21)]
+
     if "nr" in fig2plot :
-        plt.plot(no_replay[0:21],"r-",label = "no replay")
+        plt.plot(xx,no_replay[0:21],"r-",label = "no replay")
     if "rr" in fig2plot :
-        plt.plot(random_replay[0:21],"b-", label = "random replay")
+        plt.plot(xx,random_replay[0:21],"b-", label = "random replay")
     if "pr" in fig2plot :
-        plt.plot(prio_replay[0:21],"g-", label = "prioritized replay")
+        plt.plot(xx,prio_replay[0:21],"g-", label = "prioritized replay")
 
     plt.title( mazetype + " | Steps per episode")
+    plt.xticks(range(21), xx)
     plt.legend()
     plt.ylim(0,200)
     plt.show()
 
 
-plot_fig1d("OpenField",["nr","rr","pr"],1000)
+plot_fig1d("LinearTrack",["nr","rr","pr"],50)
+
 
 
 

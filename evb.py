@@ -4,7 +4,8 @@ from typing import Union
 from maze import LinearTrack, OpenField
 from parameters import Parameters
 from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 """==============================================================================================================="""
 
@@ -25,7 +26,7 @@ def get_gain (Q, planExp, params) :
     # planExp = [ step1, step3, ....]
     gain = []
     gain_matrix = np.empty(Q.shape)
-    gain_matrix.fill(np.nan)
+    gain_matrix.fill(np.NaN)
   
 
     for i in range(len(planExp)) :
@@ -43,7 +44,7 @@ def get_gain (Q, planExp, params) :
             Q_mean = np.copy(Q)
 
             Qpre = Q_mean  # NOT USING THIS??
-            
+
             # Policy BEFORE backup
 
             #pA_pre = self.get_act_probs(Q_mean)
@@ -59,6 +60,7 @@ def get_gain (Q, planExp, params) :
             steps_to_end = this_exp.shape[0] - (j + 1)
 
             rew = np.dot(np.power(params.gamma, np.arange(0, steps_to_end + 1)), this_exp[j:, 2])
+
             Q_target = rew + np.power(params.gamma, steps_to_end + 1) * stp1_value
             
             Q_mean[int(this_exp[j, 0]),act_taken] += params.alpha * (Q_target - Q_mean[int(this_exp[j, 0]),act_taken])
@@ -70,10 +72,9 @@ def get_gain (Q, planExp, params) :
             # calculate gain
             EV_pre = np.sum(np.multiply(pA_pre, Q_mean[int(this_exp[j, 0])]))
             EV_post = np.sum(np.multiply(pA_post, Q_mean[int(this_exp[j, 0])]))
-            
+                         
             gain[i][j] = EV_post - EV_pre
 
-            
             Qpost = Q_mean  
 
             # Save on gain[s, a]
@@ -133,11 +134,12 @@ def get_need(st, T, planExp, params) :
 """==============================================================================================================="""
 
 def calculate_evb(planExp, gain, need, params) :
-    EVB = np.full((len(planExp)), np.nan)
+    EVB = np.full((len(planExp)), np.NaN)
 
     for i in range( len(planExp) ) :
         if len(planExp[i].shape) == 1:
             EVB[i] = need[i][-1] * max( gain[i], params.baselineGain ) 
+  
         else :
             EVB[i] = 0
             for x in range(len(planExp[i])) :

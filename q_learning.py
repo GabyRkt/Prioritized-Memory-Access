@@ -24,11 +24,18 @@ def update_q_table(st,at,r,stp1, m:Union[LinearTrack,OpenField], params:Paramete
         ----------    
     """
 
+
     m.etr[st,:] = 0
     m.etr[st,at] = 1
     delta = r + params.gamma * np.max( m.Q[stp1] ) - m.Q[st,at]
-    m.Q = m.Q + delta * m.etr
+    m.Q = m.Q + delta * m.etr 
     m.etr = m.etr * params.lmbda * params.gamma
+
+
+    for i in range( len(m.Q) ):
+        for j in range(0,4) :
+            if m.Q[i,j] < 0.001 :
+                m.Q[i,j] = 0
 
     return
 

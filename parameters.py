@@ -5,7 +5,7 @@ class Parameters :
 
   def __init__(self) :
     
-    self.MAX_N_STEPS = int(1e5)       
+    self.MAX_N_STEPS = 40000       
     "maximum number of steps in a simulation"
 
     self.MAX_N_EPISODES = 50          
@@ -31,7 +31,7 @@ class Parameters :
     self.epsilon = 0               
     "exploration rate for egreedy"
 
-    self.tau = 1/5                    
+    self.tau = 1/100                   
     "inverse temperature for softmax"
 
 

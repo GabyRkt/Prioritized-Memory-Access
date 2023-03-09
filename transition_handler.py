@@ -22,12 +22,15 @@ def run_pre_explore(m : Union[LinearTrack,OpenField]) :
     # letting the agent try every action at each state, to build a transition matrix
     for s in range(0, m.nb_states) :
         for a in range(0,4) :
-            if (s not in m.last_states) and (s != m.nb_states-1): # don't explore last state and well
+            if (s not in m.last_states) : # don't explore last state and well
                 m.mdp.current_state = s
                 [stp1, _, _, _] = m.mdp.step(a) 
+                
                 m.listExp = np.append( m.listExp , [[s, a, 0, stp1]], axis=0) # update the list of experiences  
+                
                 m.exp_LastStp1[s,a] = stp1 # update the list of last stp1 obtained with (st,at)
                 m.exp_LastR[s,a] = 0 # update the list of last reward obtained with (st,at)
+
                 m.T[s,stp1] = m.T[s,stp1] + 1
     
     # normalising the transition matrix
@@ -60,7 +63,7 @@ def add_goal2start(m: Union[LinearTrack,OpenField], params : Parameters) :
             m.T[last_state,:] = 0 # at first, put all transitions from last_state to 0
 
             # get a list of all index of valid start states : i.e not last_states or well
-            l_valid_states = [ i for i in range(m.nb_states) if ( (i not in m.last_states) and (i!=m.nb_states-1) )  ]
+            l_valid_states = [ i for i in range(m.nb_states) if (i not in m.last_states)   ]
 
             # transitions from goal to all possible start states have the same probability
             for valid_state in l_valid_states :
@@ -70,11 +73,18 @@ def add_goal2start(m: Union[LinearTrack,OpenField], params : Parameters) :
         else :
             m.T[last_state,:] = 0  # at first, put all transitions from last_state to 0
             # Top-Track Last State ==> Bottom-Track Start State
+            
+            
             if last_state == 18 :
                 m.T[last_state,19] = 1
             # Bottom-Track Last State ==> Top-Track Start State
             elif last_state == 1 :
                 m.T[last_state,0] = 1
+
+
+
+            elif last_state == 41 :
+                m.T[last_state,2] = 1
 
     return
 
