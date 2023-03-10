@@ -64,17 +64,19 @@ def plot_1g(mazetype) :
             [ b[1]  , b[3]  , b[5]  , b[7]  , b[9]  , b[11] , b[13] , b[15] , b[17] , b[19]  ],
         ]
     
-    sns.set()
-    f1 = plt.figure()
+    sns.set(font_scale=3)
+    f1 = plt.figure(figsize=(20,12))
     f1.suptitle(mazetype+': Need Before Learning')
 
-    ax1 = sns.heatmap(need_b4, vmin=0, square=True, yticklabels=False, xticklabels=False, cmap="Blues")
+    ax1 = sns.heatmap(need_b4, vmin=0, square=True, yticklabels=False, xticklabels=False, cmap="Blues", linewidths=0.003, linecolor="black")
+    ax1.set_facecolor('xkcd:black')
     plt.savefig("figures/fig_1g/"+mazetype+"_before_learning.png")
 
-    f2 = plt.figure()
+    f2 = plt.figure(figsize=(20,12))
     f2.suptitle(mazetype+': Need After Learning')
 
-    ax2 = sns.heatmap(need_after, vmin=0,square=True, yticklabels=False, xticklabels=False, cmap="Blues")
+    ax2 = sns.heatmap(need_after, vmin=0,square=True, yticklabels=False, xticklabels=False, cmap="Blues", linewidths=0.003, linecolor="black")
+    ax2.set_facecolor('xkcd:black')
     plt.savefig("figures/fig_1g/"+mazetype+"_after_learning.png")
 
 
