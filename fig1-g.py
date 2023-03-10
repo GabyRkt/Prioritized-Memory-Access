@@ -68,13 +68,13 @@ def plot_1g(mazetype) :
     f1 = plt.figure()
     f1.suptitle(mazetype+': Need Before Learning')
 
-    ax1 = sns.heatmap(need_b4, vmin=0, square=True, yticklabels=False, xticklabels=False)
+    ax1 = sns.heatmap(need_b4, vmin=0, square=True, yticklabels=False, xticklabels=False, cmap="Blues")
     plt.savefig("figures/fig_1g/"+mazetype+"_before_learning.png")
 
     f2 = plt.figure()
     f2.suptitle(mazetype+': Need After Learning')
 
-    ax2 = sns.heatmap(need_after, vmin=0,square=True, yticklabels=False, xticklabels=False)
+    ax2 = sns.heatmap(need_after, vmin=0,square=True, yticklabels=False, xticklabels=False, cmap="Blues")
     plt.savefig("figures/fig_1g/"+mazetype+"_after_learning.png")
 
 
