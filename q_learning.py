@@ -40,3 +40,49 @@ def update_q_table(st,at,r,stp1, m:Union[LinearTrack,OpenField], params:Paramete
     return
 
 """==============================================================================================================="""
+
+def update_q_wplan (plan_exp_arr_max, m, params):
+    """ Updates Q-values using planExp with the highest EVB (plan_exp_arr_max)
+
+        Arguments
+        ----------
+            plan_exp_arr_max -- (array) : array of experience with maximum EVB 
+            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
+            params -- Parameters from parameters.py : class with the settings of the current simulation 
+        
+        Returns
+        ----------
+    
+    """
+    
+    for n in range(plan_exp_arr_max.shape[0]):
+
+        # Retrieve information from this experience
+        s_plan = int(plan_exp_arr_max[n][0])
+        a_plan = int(plan_exp_arr_max[n][1])
+
+        # Individual rewards from this step to end of trajectory
+        rew_to_end = plan_exp_arr_max[n:][:, 2]
+        # Notice the use of '-1' instead of 'n', meaning that stp1_plan is the final state of the
+        # trajectory
+        
+        stp1_plan = int(plan_exp_arr_max[-1][3])
+
+
+        # Discounted cumulative reward from this step to end of trajectory
+        n_plan = np.size(rew_to_end)
+        r_plan = np.dot(np.power(params.gamma, np.arange(0, n_plan)), rew_to_end)
+
+        # Add plan and q_learning updates to q_learning function
+        stp1_value = np.max(m.Q[stp1_plan])
+        Q_target = r_plan + (params.gamma ** n_plan) * stp1_value
+
+        # Update Q-value for this state-action pair 
+        m.Q[s_plan, a_plan] = m.Q[s_plan, a_plan] + params.alpha * (Q_target - m.Q[s_plan, a_plan])
+
+    return 
+
+
+"""==============================================================================================================="""
+
+

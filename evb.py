@@ -146,3 +146,33 @@ def calculate_evb(planExp, gain, need, params) :
                 EVB[i] += need[i][-1] * max(gain[i][-1], params.baselineGain)
     
     return EVB
+
+"""==============================================================================================================="""
+
+def get_maxEVB_idx (EVB, planExp) :
+    """ Returns the index of planExp with the highest EVB values
+
+         Arguments
+        ----------
+            EVB -- np.array (???) : List of expected EVB values
+            planExp -- matrix ((state X action) X 4) : memory of last reward and next state obtained of each tuple (state, action)
+            
+        Returns
+        ---------- 
+            maxEVB_idx -- (??) : Index of planExp with the highest EVB value
+
+    """
+    maxEVB_idx = np.argwhere(EVB == max(EVB))
+
+    if len(maxEVB_idx) > 1 :
+        n_steps = np.array([arr.shape[0] if len(arr.shape) > 1 else 1 for arr in planExp])
+        maxEVB_idx = maxEVB_idx[n_steps[maxEVB_idx] == min(n_steps[maxEVB_idx])]
+        if len(maxEVB_idx) > 1 :
+            maxEVB_idx = maxEVB_idx[np.random.randint(len(maxEVB_idx))]  
+                            
+    else:
+        maxEVB_idx = maxEVB_idx[0][0]
+    
+    return maxEVB_idx
+
+"""==============================================================================================================="""
