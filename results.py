@@ -87,10 +87,4 @@ class Results :
     self.nbStep_backwardReplay_forward = []
     self.nbStep_backwardReplay_backward = []
     self.dist_agent_replay_state = []
-
-    init_variable(self)
-
-    def init_variable(self) :
-      if self.figure_1_d :
-        ...
     
