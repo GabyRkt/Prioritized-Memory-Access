@@ -70,20 +70,22 @@ class Results :
     self.figure_6_a=figure_6_a
     self.figure_6_c=figure_6_c
 
+    "number of simulation"
+    self.nbSimulation = 0
 
     "stored data"
-    self.nbStep = -1
+    self.nbStep = []
     self.need = [] 
     self.gain = []
     self.Q = []
-    self.forward_before_run = -1
-    self.forward_after_run = -1
-    self.backward_before_run = -1
-    self.backward_after_run = -1
-    self.nbStep_forwardReplay_forward = -1
-    self.nbStep_forwardReplay_backward = -1
-    self.nbStep_backwardReplay_forward = -1
-    self.nbStep_backwardReplay_backward = -1
+    self.forward_before_run = []
+    self.forward_after_run = []
+    self.backward_before_run = []
+    self.backward_after_run = []
+    self.nbStep_forwardReplay_forward = []
+    self.nbStep_forwardReplay_backward = []
+    self.nbStep_backwardReplay_forward = []
+    self.nbStep_backwardReplay_backward = []
     self.dist_agent_replay_state = []
 
     init_variable(self)
