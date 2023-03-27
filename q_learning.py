@@ -85,4 +85,27 @@ def update_q_wplan (plan_exp_arr_max, m, params):
 
 """==============================================================================================================="""
 
+def get_action(st, m: Union[LinearTrack,OpenField], params : Parameters) :
+    """ Determines which action to take for the current state based on the policy in the settings
 
+        Arguments
+        ----------
+            st -- int : the current state
+            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
+            params -- Parameters from parameters.py : class with the settings of the current simulation 
+        
+        Returns
+        ----------  
+            at -- int : the action chosen based on the policy  
+    """
+
+    if params.actpolicy == "softmax" :
+        probs = softmax(m.Q, st, params.tau)
+        at = sample_categorical( probs )
+            
+    elif params.actpolicy == "egreedy"  :
+        at = egreedy(m.Q, st, params.epsilon)
+    
+    return at
+
+"""==============================================================================================================="""

@@ -27,30 +27,6 @@ import time
 
 """==============================================================================================================="""
 
-def get_action(st, m: Union[LinearTrack,OpenField], params : Parameters) :
-    """ Determines which action to take for the current state based on the policy in the settings
-
-        Arguments
-        ----------
-            st -- int : the current state
-            m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
-            params -- Parameters from parameters.py : class with the settings of the current simulation 
-        
-        Returns
-        ----------  
-            at -- int : the action chosen based on the policy  
-    """
-
-    if params.actpolicy == "softmax" :
-        probs = softmax(m.Q, st, params.tau)
-        at = sample_categorical( probs )
-            
-    elif params.actpolicy == "egreedy"  :
-        at = egreedy(m.Q, st, params.epsilon)
-    
-    return at
-
-"""==============================================================================================================="""
 
 def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
     """ Calculates the need for a state depending on planExp and the current mode of the agent (offline or online)
@@ -164,7 +140,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                         plan_exp_arr_max = np.expand_dims(plan_exp_arr[maxEVB_idx][-1], axis=0)
 
                     #Update q_values using plan_exp_arr_max
-                    update_q_wplan(plan_exp_arr_max, m, planExp, params)
+                    update_q_wplan(plan_exp_arr_max, m, params)
 
                     # Add the updated planExp to planning_backups 
                     planning_backups = update_planning_backups(planning_backups, plan_exp_arr_max)
