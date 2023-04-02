@@ -15,7 +15,7 @@ def plot_5a():
 
     # ----------- Figure a ------------- #
 
-    Qpost = np.array([[-1, 0], [0.5, 0], [4,0]])
+    Qpost = np.array([[-1, 0], [0.5, 0], [3,0]])
 
     for i in range(len(Qpost)):
         pA_post = np.exp(softmaxInvT * Qpost[i,:]) / np.sum(np.exp(softmaxInvT * Qpost[i,:]))
@@ -34,7 +34,7 @@ def plot_5a():
     ax[0].axhline(y=0, color='black', linewidth=0.5)
 
 
-    ax[0].set_xticks(np.arange(len(Qpost)), np.array([-1, 0.5, 3]))
+    ax[0].set_xticks(np.arange(len(Qpost)), Qpost[:,0])
     ax[0].set_yticks([])
 
     ax[0].set_ylabel('Gain Term')
@@ -45,7 +45,7 @@ def plot_5a():
 
     # ----------- Figure b ------------- #
 
-    Qpost = np.array([[1, -1], [1, 0.5], [1, 4]])
+    Qpost = np.array([[1, -2], [1, 0.5], [1, 2]])
 
     for i in range(len(Qpost)):
         pA_post = np.exp(softmaxInvT * Qpost[i,:]) / np.sum(np.exp(softmaxInvT * Qpost[i,:]))
@@ -62,7 +62,7 @@ def plot_5a():
     ax[1].axhline(y=0, color='black', linewidth=0.5)
 
     
-    ax[1].set_xticks(np.arange(len(Qpost)), np.array([-2, 0.5, 2]))
+    ax[1].set_xticks(np.arange(len(Qpost)), Qpost[:,1])
     ax[1].set_yticks([])
 
     ax[1].set_xlabel('Qnew')
