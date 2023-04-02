@@ -129,7 +129,7 @@ def get_need(st, T, planExp, params) :
         SR_or_SD = SD
 
     else :
-        print("Error get_need : params.onlineVSoffline unknown")
+        print("Error get_need : params.onlineVSoffline unknown !")
 
     # Calculate the need term for each episode and each step
     for i_step in range (len(planExp)) :
