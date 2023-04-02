@@ -72,19 +72,21 @@ def add_goal2start(m: Union[LinearTrack,OpenField], params : Parameters) :
         # if LINEAR TRACK
         else :
             m.T[last_state,:] = 0  # at first, put all transitions from last_state to 0
+            
             # Top-Track Last State ==> Bottom-Track Start State
-            
-            
             if last_state == 18 :
                 m.T[last_state,19] = 1
             # Bottom-Track Last State ==> Top-Track Start State
             elif last_state == 1 :
                 m.T[last_state,0] = 1
 
-
-
+            # Open Field
             elif last_state == 41 :
                 m.T[last_state,2] = 1
+
+            # T maze
+            elif last_state == 5 :
+                m.T[last_state,3] = 1
 
     return
 
