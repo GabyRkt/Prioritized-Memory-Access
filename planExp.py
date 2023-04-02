@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from evb import *
 from q_learning import *
 from transition_handler import *
-from simulation import get_action
 import random
 import seaborn as sns
 import time
