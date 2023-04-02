@@ -114,8 +114,19 @@ def get_need(st, T, planExp, params) :
   
     elif params.onlineVSoffline == "offline" :
         # The agent is asleep, there is not st
-        # Calculate eigenvectors and eigenvalues
-        SR_or_SD = 0
+
+        # Calculate eigenvectors (vecteurs propres) and eigenvalues (valeurs propores)
+        eigenvalues, eigenvectors = np.linalg.eig(T)
+
+        # full matrix W whose columns are the corresponding left eigenvectors, so that W'*A = D*W'
+        left_eigenvectors = scipy.linalg.eig(self.T, left=True, right=False)[1] 
+        
+        if (abs(eigenvalues[0])-1 > 1e-10) :
+            print("Error get_need : precision error")
+            return
+        
+        SD = abs(left_eigenvectors[:,0]) # Stationary distribution of the MDP
+        SR_or_SD = SD
 
     else :
         print("Error get_need : params.onlineVSoffline unknown")
