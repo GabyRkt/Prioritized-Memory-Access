@@ -10,7 +10,6 @@ def plot_1f():
     params.actpolicy = 'softmax'
 
     Q = np.arange(0, 1.001, 0.001)
-    print (Q)
     Qspacing = 0.1 # Spacing between Q-values before update
     Qrange = 3*Qspacing # Range of Q-vaues to plot (before and after the original Q)
 

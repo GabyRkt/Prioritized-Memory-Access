@@ -47,7 +47,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
     # [ PRE-EXPLORATION ]
 
-    # Have the agent freely explore the maze without rewards to learn action consequences
+    # Have the agent freely explore the maze without rewards to learn action consequences !
     if params.preExplore : 
         run_pre_explore(m)
 
