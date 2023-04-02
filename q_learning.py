@@ -4,6 +4,8 @@ from typing import Union
 from maze import LinearTrack, OpenField
 from parameters import Parameters
 from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 """==============================================================================================================="""
@@ -31,17 +33,11 @@ def update_q_table(st,at,r,stp1, m:Union[LinearTrack,OpenField], params:Paramete
     m.Q = m.Q + delta * m.etr 
     m.etr = m.etr * params.lmbda * params.gamma
 
-
-    for i in range( len(m.Q) ):
-        for j in range(0,4) :
-            if m.Q[i,j] < 0.001 :
-                m.Q[i,j] = 0
-
     return
 
 """==============================================================================================================="""
 
-def update_q_wplan (st, p, log, step_i, plan_exp_arr_max, m, params):
+def update_q_wplan (st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, params):
     """ Updates Q-values using planExp with the highest EVB (plan_exp_arr_max)
 
         Arguments
@@ -72,6 +68,51 @@ def update_q_wplan (st, p, log, step_i, plan_exp_arr_max, m, params):
         
         stp1_plan = int(plan_exp_arr_max[-1][3])
 
+        if False:
+            SR = np.linalg.inv(np.eye(len(m.T)) - params.gamma * m.T)
+            b = [ max(i) for i in m.Q ]
+            q_after = [
+                [ b[0]  , b[2]  , b[4]  , b[6]  , b[8]  , b[10] , b[12] , b[14] , b[16] , b[18]  ],
+                [ np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN ],
+                [ b[1]  , b[3]  , b[5]  , b[7]  , b[9]  , b[11] , b[13] , b[15] , b[17] , b[19]  ],
+            ]
+            b = [ ' ' for i in range(m.nb_states) ]
+            if a_plan == 0 :
+                b[s_plan] = "^"
+            elif a_plan == 1 :
+                b[s_plan] = "v"
+            elif a_plan == 2 :
+                b[s_plan] = ">"
+            else :
+                b[s_plan] = "<" 
+            
+            b[st] = "o"
+            
+  
+            gain_annot = [
+                [ b[0]  , b[2]  , b[4]  , b[6]  , b[8]  , b[10] , b[12] , b[14] , b[16] , b[18]  ],
+                [ np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN ],
+                [ b[1]  , b[3]  , b[5]  , b[7]  , b[9]  , b[11] , b[13] , b[15] , b[17] , b[19]  ],
+            ]
+        
+            # ax2 = sns.heatmap(q_after, fmt="", vmin=0, vmax=1, annot = gain_annot,cmap="Blues_r",square=True, yticklabels=False, xticklabels=False)
+            # plt.plot()
+            # plt.show(block=False)
+            # plt.pause(1)
+            # plt.close()
+            # b = [ (max(i)*5).round(3) for i in saGain ]
+            # gain_annot = [
+            #     [ b[0]  , b[2]  , b[4]  , b[6]  , b[8]  , b[10] , b[12] , b[14] , b[16] , b[18]  ],
+            #     [ np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN ],
+            #     [ b[1]  , b[3]  , b[5]  , b[7]  , b[9]  , b[11] , b[13] , b[15] , b[17] , b[19]  ],
+            # ]
+        
+            ax2 = sns.heatmap(q_after, fmt="", vmin=0, vmax=1, annot = gain_annot,cmap="Blues_r",square=True, yticklabels=False, xticklabels=False)
+            plt.plot()
+            plt.show(block= False)
+            plt.pause(0.2)
+            plt.close()
+
 
         # Discounted cumulative reward from this step to end of trajectory
         n_plan = np.size(rew_to_end)
@@ -84,27 +125,26 @@ def update_q_wplan (st, p, log, step_i, plan_exp_arr_max, m, params):
         # Update Q-value for this state-action pair 
         m.Q[s_plan, a_plan] = m.Q[s_plan, a_plan] + params.alpha * (Q_target - m.Q[s_plan, a_plan])
 
-        if (p > 1) and (s_plan != prev_s) and (st % 2) == (s_plan % 2):
-            if step_i == 0 :
-
-                if s_plan == prev_stp1 : 
-                    log.nbStep_forwardReplay_forward += 1
-
-                if stp1_plan == prev_s :
-                    log.nbStep_forwardReplay_forward += 1
+        if (p > 1) :
+            if (s_plan != prev_s) and (st % 2) == (s_plan % 2):
                 
-                else:
-                    if s_plan == prev_stp1 :
-                        log.bStep_forwardReplay_backward += 1
-
+                if step_i == 0 :
+            
+                    if s_plan == prev_stp1  :
+                        log.nbStep_forwardReplay_forward += 1
+                    
                     if stp1_plan == prev_s :
-                        log.bStep_forwardReplay_backward += 1
-        
-        prev_s = s_plan
-        prev_stp1 = stp1_plan
+                        log.nbStep_backwardReplay_forward += 1
 
+                else :
+                    
+                    if s_plan == prev_stp1  :
+                        log.nbStep_forwardReplay_backward += 1
+                    
+                    if stp1_plan == prev_s :
+                        log.nbStep_backwardReplay_backward += 1
 
-    return 
+    return s_plan, stp1_plan
 
 
 """==============================================================================================================="""
