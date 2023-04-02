@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from parameters import Parameters
 
+import warnings
+warnings.filterwarnings("ignore")
+
 def plot_1f():
 
     params = Parameters

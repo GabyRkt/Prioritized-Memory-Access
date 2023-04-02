@@ -147,6 +147,9 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                     #Update q_values using plan_exp_arr_max
                     prev_s , prev_stp1 = update_q_wplan(st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, params)
 
+                    if p == 1 :
+                        log.dist_agent_replay_state.append( (st,prev_s) )
+
                     # Add the updated planExp to planning_backups 
                     planning_backups = update_planning_backups(planning_backups, plan_exp_arr_max)
                 
