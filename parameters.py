@@ -25,13 +25,13 @@ class Parameters :
 
     #params for action selection policies :
 
-    self.actpolicy = "egreedy"        
+    self.actpolicy = "softmax"        
     "softmax or egreedy"
 
-    self.epsilon = 0               
+    self.epsilon = 0.1               
     "exploration rate for egreedy"
 
-    self.tau = 1/100                   
+    self.tau = 0.2                  
     "inverse temperature for softmax"
 
 
