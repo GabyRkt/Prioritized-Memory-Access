@@ -138,12 +138,7 @@ def calculate_evb(planExp, gain, need, params) :
 
     for i in range( len(planExp) ) :
         if len(planExp[i].shape) == 1:
-            EVB[i] = need[i][-1] * max( gain[i], params.baselineGain ) 
-  
-        else :
-            EVB[i] = 0
-            for x in range(len(planExp[i])) :
-                EVB[i] += need[i][-1] * max(gain[i][-1], params.baselineGain)
+            EVB[i] = np.sum(need[i][-1] * max( gain[i], params.baselineGain ))
     
     return EVB
 

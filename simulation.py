@@ -4,14 +4,12 @@ from typing import Union
 from maze import LinearTrack, OpenField
 from parameters import Parameters
 from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
-import matplotlib.pyplot as plt
-from evb import *
-from q_learning import *
-from transition_handler import *
-from planExp import *
-import random
-import seaborn as sns
-import time
+from evb import get_gain, get_need, get_maxEVB_idx, calculate_evb
+from q_learning import update_q_table, update_q_wplan, get_action
+from transition_handler import run_pre_explore, add_goal2start, update_transition_n_experience
+from planExp import create_plan_exp, expand_plan_exp, update_planning_backups
+from logger import Logger
+
 
 # /!\ 
 
@@ -44,6 +42,8 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
     m.reInit()
     m.mdp.timeout = params.MAX_N_STEPS
     list_steps = []
+
+    log = Logger()
 
     # [ PRE-EXPLORATION ]
 
@@ -140,7 +140,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                         plan_exp_arr_max = np.expand_dims(plan_exp_arr[maxEVB_idx][-1], axis=0)
 
                     #Update q_values using plan_exp_arr_max
-                    update_q_wplan(plan_exp_arr_max, m, params)
+                    update_q_wplan(st, p, log, step_i, plan_exp_arr_max, m, params)
 
                     # Add the updated planExp to planning_backups 
                     planning_backups = update_planning_backups(planning_backups, plan_exp_arr_max)

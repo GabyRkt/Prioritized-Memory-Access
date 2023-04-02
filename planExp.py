@@ -3,14 +3,9 @@ from typing_extensions import ParamSpecArgs
 from typing import Union
 from maze import LinearTrack, OpenField
 from parameters import Parameters
-from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
-import matplotlib.pyplot as plt
-from evb import *
-from q_learning import *
-from transition_handler import *
-import random
-import seaborn as sns
-import time
+from mazemdp.toolbox import sample_categorical
+from q_learning import get_action
+
 
 """==============================================================================================================="""
 
@@ -59,6 +54,7 @@ def create_plan_exp( m : Union[LinearTrack,OpenField], params : Parameters ) :
 """==============================================================================================================="""
 
 def expand_plan_exp(planning_backups, planExp, m : Union[OpenField,LinearTrack], params) :
+
     seqStart = np.argwhere(planning_backups[:, 4] == 1)[-1][0]
     seqSoFar = planning_backups[seqStart:, 0:4]
     

@@ -41,11 +41,15 @@ def update_q_table(st,at,r,stp1, m:Union[LinearTrack,OpenField], params:Paramete
 
 """==============================================================================================================="""
 
-def update_q_wplan (plan_exp_arr_max, m, params):
+def update_q_wplan (st, p, log, step_i, plan_exp_arr_max, m, params):
     """ Updates Q-values using planExp with the highest EVB (plan_exp_arr_max)
 
         Arguments
         ----------
+            st : current state of the agent
+            p -- (int) : current number of planning step
+            log -- (Object) : logger to store data 
+            step_i -- (int) : current number of steps 
             plan_exp_arr_max -- (array) : array of experience with maximum EVB 
             m -- Union[LinearTrack,OpenField] from maze.py : class with the maze and the agent
             params -- Parameters from parameters.py : class with the settings of the current simulation 
@@ -79,6 +83,26 @@ def update_q_wplan (plan_exp_arr_max, m, params):
 
         # Update Q-value for this state-action pair 
         m.Q[s_plan, a_plan] = m.Q[s_plan, a_plan] + params.alpha * (Q_target - m.Q[s_plan, a_plan])
+
+        if (p > 1) and (s_plan != prev_s) and (st % 2) == (s_plan % 2):
+            if step_i == 0 :
+
+                if s_plan == prev_stp1 : 
+                    log.nbStep_forwardReplay_forward += 1
+
+                if stp1_plan == prev_s :
+                    log.nbStep_forwardReplay_forward += 1
+                
+                else:
+                    if s_plan == prev_stp1 :
+                        log.bStep_forwardReplay_backward += 1
+
+                    if stp1_plan == prev_s :
+                        log.bStep_forwardReplay_backward += 1
+        
+        prev_s = s_plan
+        prev_stp1 = stp1_plan
+
 
     return 
 
