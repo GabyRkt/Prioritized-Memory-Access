@@ -28,7 +28,7 @@ def plot_fig3(mazetype: str="LinearTrack", nb_sims: int = 100) :
 
     for i in range(nb_sims) :
         print("running simulation : "+str(i)+"/"+str(nb_sims) )
-        _ , log = run_simulation(m,p)
+        log = run_simulation(m,p)
 
         before_run[0] += log.nbStep_forwardReplay_forward
         before_run[1] += log.nbStep_backwardReplay_forward

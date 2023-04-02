@@ -58,20 +58,20 @@ def plot_fig1d(mazetype : str = "OpenField", fig2plot : list = ["pr","rr","nr"],
         # NO REPLAY SIMULATIONS
         if "nr" in fig2plot : 
             print("\nsimulation NO REPLAY "+ str(i)) 
-            sim_i_nr = run_simulation(m_nr,p_nr)
-            no_replay = [ no_replay[j] + (sim_i_nr[j]/nb_sims) for j in range( len(sim_i_nr) ) ]
+            log_nr = run_simulation(m_nr,p_nr)
+            no_replay = [ no_replay[j] + (log_nr.nbStep[j]/nb_sims) for j in range( len(log_nr.nbStep) ) ]
 
         # RANDOM REPLAY SIMULATIONS
         if "rr" in fig2plot :
             print("\nsimulation RANDOM REPLAY "+ str(i)) 
-            sim_i_rr = run_simulation(m_rr,p_rr)
-            random_replay = [ random_replay[j] + (sim_i_rr[j]/nb_sims) for j in range( len(sim_i_rr) ) ]
+            log_rr = run_simulation(m_rr,p_rr)
+            random_replay = [ random_replay[j] + (log_rr.nbStep[j]/nb_sims) for j in range( len(log_rr.nbStep) ) ]
 
         # PRIORITIZED REPLAY SIMULATIONS
         if "pr" in fig2plot :
             print("\nsimulation PRIORITIZED REPLAY "+ str(i)) 
-            sim_i_pr = run_simulation(m_pr,p_pr)
-            prio_replay = [ prio_replay[j] + (sim_i_pr[j]/nb_sims) for j in range( len(sim_i_pr) ) ]
+            log_pr = run_simulation(m_pr,p_pr)
+            prio_replay = [ prio_replay[j] + (log_pr.nbStep[j]/nb_sims) for j in range( len(log_pr.nbStep) ) ]
     
 
     # PLOT FIGURES
@@ -91,7 +91,7 @@ def plot_fig1d(mazetype : str = "OpenField", fig2plot : list = ["pr","rr","nr"],
     plt.show()
 
 
-plot_fig1d("LinearTrack",["nr","rr","pr"],50)
+plot_fig1d("LinearTrack",["nr","rr","pr"],1)
 
 
 

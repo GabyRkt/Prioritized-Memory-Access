@@ -42,7 +42,6 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
     m.reInit()
     m.mdp.timeout = params.MAX_N_STEPS
-    list_steps = []
 
     log = Logger()
 
@@ -167,8 +166,8 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                     m.T[stp1,:] = m.T[stp1,:] + params.Talpha * ( targVec - m.T[stp1,:] ) # shift T-matrix towards targvec (?) => needs explanation
                     m.listExp = np.append( m.listExp , [[stp1, np.NaN, np.NaN, st]], axis=0)
 
-        list_steps.append(step_i)
+        log.nbStep.append(step_i)
 
-    return list_steps, log
+    return log
 
 
