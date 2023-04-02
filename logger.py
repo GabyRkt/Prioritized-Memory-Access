@@ -82,9 +82,10 @@ class Logger :
     self.forward_after_run = []
     self.backward_before_run = []
     self.backward_after_run = []
-    self.nbStep_forwardReplay_forward = []
-    self.nbStep_forwardReplay_backward = []
-    self.nbStep_backwardReplay_forward = []
-    self.nbStep_backwardReplay_backward = []
+
+    self.nbStep_forwardReplay_forward = 0
+    self.nbStep_forwardReplay_backward = 0
+    self.nbStep_backwardReplay_forward = 0
+    self.nbStep_backwardReplay_backward = 0
     self.dist_agent_replay_state = []
     
