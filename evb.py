@@ -6,6 +6,7 @@ from parameters import Parameters
 from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
 import matplotlib.pyplot as plt
 import seaborn as sns
+import scipy 
 
 """==============================================================================================================="""
 
@@ -119,7 +120,7 @@ def get_need(st, T, planExp, params) :
         eigenvalues, eigenvectors = np.linalg.eig(T)
 
         # full matrix W whose columns are the corresponding left eigenvectors, so that W'*A = D*W'
-        left_eigenvectors = scipy.linalg.eig(self.T, left=True, right=False)[1] 
+        left_eigenvectors = scipy.linalg.eig(T, left=True, right=False)[1] 
         
         if (abs(eigenvalues[0])-1 > 1e-10) :
             print("Error get_need : precision error")
