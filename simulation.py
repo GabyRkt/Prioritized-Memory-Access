@@ -9,6 +9,7 @@ from q_learning import update_q_table, update_q_wplan, get_action
 from transition_handler import run_pre_explore, add_goal2start, update_transition_n_experience
 from planExp import create_plan_exp, expand_plan_exp, update_planning_backups
 from logger import Logger
+import random
 
 
 # /!\ 
@@ -79,6 +80,10 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
             # Perform Action : st , at  
             [stp1, r, done, _] = m.mdp.step(at)
 
+            # add gaussian noise to r if reward is found
+            if r :
+                r = random.gauss(r,0.1)
+
             # Update Transition Matrix & Experience List with stp1 and r
             update_transition_n_experience(st,at,r,stp1, m, params)
 
@@ -99,7 +104,8 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
             # pre-allocating planning variables
             planning_backups = np.empty( (0,5) )
-
+            prev_s = np.NaN
+            prev_stp1 = np.NaN
 
             while p <= params.Nplan :
 
@@ -140,7 +146,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                         plan_exp_arr_max = np.expand_dims(plan_exp_arr[maxEVB_idx][-1], axis=0)
 
                     #Update q_values using plan_exp_arr_max
-                    update_q_wplan(st, p, log, step_i, plan_exp_arr_max, m, params)
+                    prev_s , prev_stp1 = update_q_wplan(st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, params)
 
                     # Add the updated planExp to planning_backups 
                     planning_backups = update_planning_backups(planning_backups, plan_exp_arr_max)
@@ -163,6 +169,6 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
         list_steps.append(step_i)
 
-    return list_steps
+    return list_steps, log
 
 
