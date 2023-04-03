@@ -207,14 +207,16 @@ class OpenField :
   def reset(self) : 
     """to be called at the end of an episode : reset the agent and returns it's starting state"""
 
-    #choose a state at random
-    prob = np.ones(self.nb_states) / (self.nb_states)
-    self.mdp.current_state = sample_categorical(prob)
+    # #choose a state at random
+    # prob = np.ones(self.nb_states) / (self.nb_states)
+    # self.mdp.current_state = sample_categorical(prob)
     
-    #but not the last state
-    while self.mdp.current_state in self.last_states :
-      prob = np.ones(self.nb_states) / (self.nb_states)
-      self.mdp.current_state = sample_categorical(prob)
+    # #but not the last state
+    # while self.mdp.current_state in self.last_states :
+    #   prob = np.ones(self.nb_states) / (self.nb_states)
+    #   self.mdp.current_state = sample_categorical(prob)
+
+    self.mdp.current_state = 2
 
     self.timestep = 0
     self.last_action_achieved = False

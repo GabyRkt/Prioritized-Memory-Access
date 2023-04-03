@@ -78,9 +78,15 @@ class Parameters :
     self.EVBthreshold = 0                
     "minimum EVB so that planning is performed"
 
-    # NEW PARAMETERS FOR RANDOM REPLAY
+    # params for random replay ( or DYNA-Q )
     self.allneed2one = False
     self.allgain2one = False
+
+    # params for fig 4 c, e
+    self.changeR = False
+    self.x4 = False
+    self.x0 = False
+
 
 
 

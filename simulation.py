@@ -62,6 +62,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
     # choose a starting state
     st = m.reset()
 
+
     for ep_i in range(params.MAX_N_EPISODES) :
         
         step_i = 0 # step counter
@@ -79,9 +80,15 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
             # Perform Action : st , at  
             [stp1, r, done, _] = m.mdp.step(at)
 
+            if params.changeR and r and ep_i in [2,3,6,7,10,11,14,15,18,19,22,23,26,27,30,31,34,35,38,39,42,43,46,47]:
+                if params.x4 :
+                    r = r*4
+                elif params.x0 :
+                    r = 0     
+
             # add gaussian noise to r if reward is found
             if r :
-                r = random.gauss(r,0.1)
+                r = random.gauss(r,0.0)
 
             # Update Transition Matrix & Experience List with stp1 and r
             update_transition_n_experience(st,at,r,stp1, m, params)
@@ -145,7 +152,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                         plan_exp_arr_max = np.expand_dims(plan_exp_arr[maxEVB_idx][-1], axis=0)
 
                     #Update q_values using plan_exp_arr_max
-                    prev_s , prev_stp1 = update_q_wplan(st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, params)
+                    prev_s , prev_stp1 = update_q_wplan(ep_i, st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, params)
 
                     if p == 1 :
                         log.dist_agent_replay_state.append( (st,prev_s) )
@@ -173,4 +180,10 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
     return log
 
+m = OpenField()
+p = Parameters()
+p.tau = 1/100
+p.epsilon = 0
+p.actpolicy = "egreedy"
 
+run_simulation(m,p)

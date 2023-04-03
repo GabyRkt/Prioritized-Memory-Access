@@ -37,7 +37,7 @@ def update_q_table(st,at,r,stp1, m:Union[LinearTrack,OpenField], params:Paramete
 
 """==============================================================================================================="""
 
-def update_q_wplan (st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, params):
+def update_q_wplan (ep_i, st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, params):
     """ Updates Q-values using planExp with the highest EVB (plan_exp_arr_max)
 
         Arguments
@@ -68,13 +68,16 @@ def update_q_wplan (st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, 
         
         stp1_plan = int(plan_exp_arr_max[-1][3])
 
-        if False:
+        if step_i == 0 and ep_i > 2:
             SR = np.linalg.inv(np.eye(len(m.T)) - params.gamma * m.T)
             b = [ max(i) for i in m.Q ]
             q_after = [
-                [ b[0]  , b[2]  , b[4]  , b[6]  , b[8]  , b[10] , b[12] , b[14] , b[16] , b[18]  ],
-                [ np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN ],
-                [ b[1]  , b[3]  , b[5]  , b[7]  , b[9]  , b[11] , b[13] , b[15] , b[17] , b[19]  ],
+                [ b[0], b[6] , b[12] , b[15], b[21], b[27] , b[32], np.NaN, b[41] ],
+                [ b[1], b[7] , np.NaN, b[16], b[22], b[28] , b[33], np.NaN, b[42] ],
+                [ b[2], b[8] , np.NaN, b[17], b[23], b[29] , b[34], np.NaN, b[43] ],
+                [ b[3], b[9] , np.NaN, b[18], b[24], b[30] , b[35], b[38] , b[44] ],
+                [ b[4], b[10], b[13] , b[19], b[25], np.NaN, b[36], b[39] , b[45] ],
+                [ b[5], b[11], b[14] , b[20], b[26], b[31] , b[37], b[40] , b[46] ]
             ]
             b = [ ' ' for i in range(m.nb_states) ]
             if a_plan == 0 :
@@ -90,9 +93,12 @@ def update_q_wplan (st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, 
             
   
             gain_annot = [
-                [ b[0]  , b[2]  , b[4]  , b[6]  , b[8]  , b[10] , b[12] , b[14] , b[16] , b[18]  ],
-                [ np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN ],
-                [ b[1]  , b[3]  , b[5]  , b[7]  , b[9]  , b[11] , b[13] , b[15] , b[17] , b[19]  ],
+                [ b[0], b[6] , b[12] , b[15], b[21], b[27] , b[32], np.NaN, b[41] ],
+                [ b[1], b[7] , np.NaN, b[16], b[22], b[28] , b[33], np.NaN, b[42] ],
+                [ b[2], b[8] , np.NaN, b[17], b[23], b[29] , b[34], np.NaN, b[43] ],
+                [ b[3], b[9] , np.NaN, b[18], b[24], b[30] , b[35], b[38] , b[44] ],
+                [ b[4], b[10], b[13] , b[19], b[25], np.NaN, b[36], b[39] , b[45] ],
+                [ b[5], b[11], b[14] , b[20], b[26], b[31] , b[37], b[40] , b[46] ]
             ]
         
             # ax2 = sns.heatmap(q_after, fmt="", vmin=0, vmax=1, annot = gain_annot,cmap="Blues_r",square=True, yticklabels=False, xticklabels=False)
@@ -107,11 +113,12 @@ def update_q_wplan (st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, 
             #     [ b[1]  , b[3]  , b[5]  , b[7]  , b[9]  , b[11] , b[13] , b[15] , b[17] , b[19]  ],
             # ]
         
-            ax2 = sns.heatmap(q_after, fmt="", vmin=0, vmax=1, annot = gain_annot,cmap="Blues_r",square=True, yticklabels=False, xticklabels=False)
+            ax2 = sns.heatmap(q_after, fmt="", vmin=0, annot = gain_annot,cmap="Reds",square=True, yticklabels=False, xticklabels=False)
             plt.plot()
-            plt.show(block= False)
-            plt.pause(0.2)
-            plt.close()
+            plt.show()
+            # plt.show(block= False)
+            # plt.pause(0.2)
+            # plt.close()
 
 
         # Discounted cumulative reward from this step to end of trajectory
@@ -132,17 +139,21 @@ def update_q_wplan (st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, 
             
                     if s_plan == prev_stp1  :
                         log.nbStep_forwardReplay_forward += 1
+                        log.forward[ep_i] += 1
                     
                     if stp1_plan == prev_s :
                         log.nbStep_backwardReplay_forward += 1
+                        log.backward[ep_i] += 1
 
                 else :
                     
                     if s_plan == prev_stp1  :
                         log.nbStep_forwardReplay_backward += 1
+                        log.forward[ep_i] += 1
                     
                     if stp1_plan == prev_s :
                         log.nbStep_backwardReplay_backward += 1
+                        log.backward[ep_i] += 1
 
     return s_plan, stp1_plan
 

@@ -74,18 +74,27 @@ class Logger :
     self.nbSimulation = 0
 
     "stored data"
+    # data for fig 1.d
     self.nbStep = []
+
+    # unused
     self.need = [] 
     self.gain = []
     self.Q = []
-    self.forward_before_run = []
-    self.forward_after_run = []
-    self.backward_before_run = []
-    self.backward_after_run = []
 
+    # data for fig 3
     self.nbStep_forwardReplay_forward = 0
     self.nbStep_forwardReplay_backward = 0
     self.nbStep_backwardReplay_forward = 0
     self.nbStep_backwardReplay_backward = 0
+
+    # data for fig 4a
     self.dist_agent_replay_state = []
+
+
+    # data for fig 5c and fig 5e
+    self.forward = [0 for _ in range(50)]
+    self.backward= [0 for _ in range(50)]
+
+    
     
