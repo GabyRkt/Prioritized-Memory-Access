@@ -68,16 +68,12 @@ def update_q_wplan (ep_i, st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_ma
         
         stp1_plan = int(plan_exp_arr_max[-1][3])
 
-        if step_i == 0 and ep_i > 2:
+        if False:
             SR = np.linalg.inv(np.eye(len(m.T)) - params.gamma * m.T)
-            b = [ max(i) for i in m.Q ]
-            q_after = [
-                [ b[0], b[6] , b[12] , b[15], b[21], b[27] , b[32], np.NaN, b[41] ],
-                [ b[1], b[7] , np.NaN, b[16], b[22], b[28] , b[33], np.NaN, b[42] ],
-                [ b[2], b[8] , np.NaN, b[17], b[23], b[29] , b[34], np.NaN, b[43] ],
-                [ b[3], b[9] , np.NaN, b[18], b[24], b[30] , b[35], b[38] , b[44] ],
-                [ b[4], b[10], b[13] , b[19], b[25], np.NaN, b[36], b[39] , b[45] ],
-                [ b[5], b[11], b[14] , b[20], b[26], b[31] , b[37], b[40] , b[46] ]
+            b = [ i for i in SR[st] ]
+            q_after = [ 
+                [ b[0] , b[1], b[2], b[4], b[5] ],
+                [ np.NaN, np.NaN, b[3], np.NaN, np.NaN]
             ]
             b = [ ' ' for i in range(m.nb_states) ]
             if a_plan == 0 :
@@ -92,13 +88,9 @@ def update_q_wplan (ep_i, st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_ma
             b[st] = "o"
             
   
-            gain_annot = [
-                [ b[0], b[6] , b[12] , b[15], b[21], b[27] , b[32], np.NaN, b[41] ],
-                [ b[1], b[7] , np.NaN, b[16], b[22], b[28] , b[33], np.NaN, b[42] ],
-                [ b[2], b[8] , np.NaN, b[17], b[23], b[29] , b[34], np.NaN, b[43] ],
-                [ b[3], b[9] , np.NaN, b[18], b[24], b[30] , b[35], b[38] , b[44] ],
-                [ b[4], b[10], b[13] , b[19], b[25], np.NaN, b[36], b[39] , b[45] ],
-                [ b[5], b[11], b[14] , b[20], b[26], b[31] , b[37], b[40] , b[46] ]
+            gain_annot =[ 
+                [ b[0] , b[1], b[2], b[4], b[5] ],
+                [ np.NaN, np.NaN, b[3], np.NaN, np.NaN]
             ]
         
             # ax2 = sns.heatmap(q_after, fmt="", vmin=0, vmax=1, annot = gain_annot,cmap="Blues_r",square=True, yticklabels=False, xticklabels=False)

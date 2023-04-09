@@ -39,7 +39,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
         ----------
             list_steps -- list of int : list of number of steps taken by the agent during the simulation for each episode
     """
-
+    params = Parameters()
     m.reInit()
     m.mdp.timeout = params.MAX_N_STEPS
 
@@ -67,7 +67,6 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
         
         step_i = 0 # step counter
         done = False # this will be True when the agent finds a reward, or when MAX_N_STEPS has been reached
-        
         print("running : [ episode "+str(ep_i)+ " ]",end='\r')
 
         while not done:  
@@ -159,6 +158,13 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
                     # Add the updated planExp to planning_backups 
                     planning_backups = update_planning_backups(planning_backups, plan_exp_arr_max)
+                    if planning_backups.shape[0] > 0:
+                        log.replay_state[ep_i] = planning_backups[:,0]
+                        log.replay_action[ep_i] = planning_backups[:,1]
+
+                    if ep_i == params.MAX_N_EPISODES : 
+                        log.replay_state[ep_i] = log.replay_state[:ep_i]
+                        log.replay_action[ep_i] = log.replay_action[:ep_i]
                 
                 p += 1
             #============================== COMPLETE STEP ==================================#
@@ -176,6 +182,8 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                     m.T[stp1,:] = m.T[stp1,:] + params.Talpha * ( targVec - m.T[stp1,:] ) # shift T-matrix towards targvec (?) => needs explanation
                     m.listExp = np.append( m.listExp , [[stp1, np.NaN, np.NaN, st]], axis=0)
 
+            
+
         log.nbStep.append(step_i)
 
     return log
@@ -186,4 +194,4 @@ p.tau = 1/100
 p.epsilon = 0
 p.actpolicy = "egreedy"
 
-run_simulation(m,p)
+# run_simulation(m,p)

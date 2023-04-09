@@ -352,7 +352,7 @@ class Tmaze :
     """to be called at the end of an episode : reset the agent and returns it's starting state"""
 
     #choose a state at random
-    self.mdp.current_state = 4
+    self.mdp.current_state = 3
 
 
     self.timestep = 0

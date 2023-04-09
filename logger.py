@@ -1,4 +1,4 @@
-
+from parameters import Parameters
 
 class Logger :
   """
@@ -91,10 +91,16 @@ class Logger :
     # data for fig 4a
     self.dist_agent_replay_state = []
 
+    # data for fig 4h
+    p = Parameters()
+    self.replay_state = [None] * p.MAX_N_STEPS
+
+    self.replay_action = [None] * p.MAX_N_STEPS
+
 
     # data for fig 5c and fig 5e
     self.forward = [0 for _ in range(50)]
     self.backward= [0 for _ in range(50)]
 
-    
-    
+  
+
