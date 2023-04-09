@@ -79,7 +79,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
             # Perform Action : st , at  
             [stp1, r, done, _] = m.mdp.step(at)
 
-            if params.changeR and r and ep_i in [2,3,6,7,10,11,14,15,18,19,22,23,26,27,30,31,34,35,38,39,42,43,46,47]:
+            if params.changeR and r and ep_i in ([x for x in range (2, 50, 4)]+[x for x in range (3, 50, 4)]) :
                 if params.x4 :
                     r = r*4
                 elif params.x0 :
