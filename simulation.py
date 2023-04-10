@@ -39,7 +39,6 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
         ----------
             list_steps -- list of int : list of number of steps taken by the agent during the simulation for each episode
     """
-    params = Parameters()
     m.reInit()
     m.mdp.timeout = params.MAX_N_STEPS
 
