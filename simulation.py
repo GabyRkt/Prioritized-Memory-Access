@@ -86,7 +86,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
             # add gaussian noise to r if reward is found
             if r :
-                r = random.gauss(r,0.0)
+                r = random.gauss(r, params.sigma)
 
             # Update Transition Matrix & Experience List with stp1 and r
             update_transition_n_experience(st,at,r,stp1, m, params)
