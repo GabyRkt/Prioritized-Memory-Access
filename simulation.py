@@ -78,15 +78,19 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
             # Perform Action : st , at  
             [stp1, r, done, _] = m.mdp.step(at)
 
-            if params.changeR and r and ep_i in ([x for x in range (2, 50, 4)]+[x for x in range (3, 50, 4)]) :
-                if params.x4 :
-                    r = r*4
+            if params.changeR and r :
+                if params.x4:
+                    if ep_i in ([x for x in range (2, 50, 4)]+[x for x in range (3, 50, 4)]) :
+                        r = 4
+                        log.event_episode.append(ep_i)
                 elif params.x0 :
-                    r = 0     
+                    if ep_i in ([x for x in range (2, 50, 4)]+[x for x in range (3, 50, 4)]):  
+                        r = 0    
+                        log.event_episode.append(ep_i)
 
             # add gaussian noise to r if reward is found
             if r :
-                r = random.gauss(r, params.sigma)
+                r = random.gauss(r,params.sigma)
 
             # Update Transition Matrix & Experience List with stp1 and r
             update_transition_n_experience(st,at,r,stp1, m, params)
