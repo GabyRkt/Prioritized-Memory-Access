@@ -22,6 +22,8 @@ def plot_1g(mazetype) :
         current_state = 4 # state where the agent is in figure 1.g
 
     p = Parameters()
+    p.actpolicy = "egreedy"    
+    p.epsilon = 0
     
     run_pre_explore(m)
     SR1 = np.linalg.inv(np.eye(len(m.T)) - p.gamma * m.T) # (I - gammaT)^np.NaN
