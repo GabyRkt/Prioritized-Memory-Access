@@ -41,12 +41,40 @@ def reconstruct_path(came_from, start, goal):
     return path
 
 
-def index_openfield (state:(int,int)) :
+def index_openfield (state:int) :
+    x = -1 # row
+    y = -1 # column
+
+    if state < 0 :
+        print("Erreur : index_openfield : state negatif")
+        break
+
+    #deux première colone
+    elif state < 12 :
+        x = state%6
+        y = state//6
+
+    elif state = 12 :
+        x = 0
+        y = 3
     
+    elif state = 13 :
+        x = 4
+        y = 3
+    
+    elif state = 14 :
+        x = 5
+        y = 3
+
+    if (x == -1) or (y == -1) :
+        print("Erreur : index_openfield : resultat negatif")
+        break
+
+    return (x,y)
 
 
 
-def breadth_first_search(mazetype: str="OpenField", start:(int,int), goal:(int,int)):
+def breadth_first_search(mazetype: str="OpenField", start: int, goal: int):
     """
     Calculates the distance from a path between the given start to the given end in the given maze
 
@@ -103,20 +131,3 @@ def breadth_first_search(mazetype: str="OpenField", start:(int,int), goal:(int,i
         break
 
     return len(path)
-
-
-def main():
-
-    walls = [(0,1), (0,2)]
-    g = SquareGrid(10, 10, walls)
-    
-
-    start = (0, 0)
-    goal = (0, 9)
-    path = breadth_first_search(g, start, goal)
-
-    print(path)
-
-
-if __name__ == '__main__':
-    main()
