@@ -8,8 +8,8 @@ from logger import Logger
 
 def plot_4h(nb_sims : int = 500) :
     
-    m = Tmaze ()
-    p = Parameters
+    m = Tmaze()
+    p = Parameters()
 
     p.start_rand = False; 
 
@@ -18,7 +18,7 @@ def plot_4h(nb_sims : int = 500) :
     p.MAX_N_STEPS       = int(1e5) # maximum number of steps to simulate
     p.MAX_N_EPISODES    = 50; # maximum number of episodes to simulate (use Inf if no max) -> Choose between 20 and 100
     p.Nplan             = 20; # number of steps to do in planning (set to zero if no planning or to Inf to plan for as long as it is worth it)
-    p.onlineVSoffline   = 'off-policy'; # Choose 'off-policy' (default, learns Q*) or 'on-policy' (learns Qpi) learning for updating Q-values and computing gain
+    p.onlineVSoffline   = 'offline'; # OFFLINE == AGENT IS ASLEEP
     p.alpha             = 1.0; # learning rate for real experience (non-bayesian)
     p.gamma             = 0.90; # discount factor
     p.tau               = 0.2
