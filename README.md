@@ -19,6 +19,46 @@ Vous trouverez une première version de notre code : [Prioritized Memory Access]
 - Prise en main de matlab
 - Compréhension de MazeMDP
 
+# FIGURES CHECKLIST
+
+FIGURE 1 : 
+- Number of steps per episode of Prioritized, Random and No Replay (1.d) ✔️
+- Link between gain and changes in Q values (1.f) ✔️
+- Need values with a random policy and a learned policy (1.g) ✔️
+
+FIGURE 2 :
+- Illustrations of Forward and Reverse Replay on the Linear Track ✔️
+- Illustrations of Forward and Reverse Replay on the Open Maze ✔️
+- Visualisation of the need term when the agent is at the start and the end of the Linear Track ✔️
+- Visualisation of the need term when the agent is at the start and the end of the Open Maze ✔️
+
+FIGURE 3 :
+- Rate of Forward vs Reverse Replay before and after a run (3) ✔️
+
+FIGURE 4 :
+- Distance between agent and replay start (4.a) ✔️
+- Activation probability across all backups within an episode (4.c) 
+- Probability that a backup happens at various distance from the agent or reward (4.d) 
+- How forward replay predict future steps (4.e)
+- How reverse replay predict past steps (4.f)
+- Proportion of backups leading to the cued vs uncued arm (4.h) ✔️
+
+FIGURE 5 :
+- Gain term when the agent learns a new value for the best action (5.a) ✔️
+- Gain term when the agent learns a new value for the worst action (5.b) ✔️
+- Difference in Forward and Reverse Replay after a reward increase (5.c) ✔️
+- Difference in Forward and Reverse Replay after a reward drop to 0 (5.e) ✔️
+- Activation probability of aversive zone before and after shock delivery (5.g) ✔️
+
+FIGURE 6 :
+- Activation probability over 50 episodes (6.a) ✔️
+- Activation probability of a specific state as a function of number of visits per episode (6.b) 
+
+
+
+
+
+
 
 
 
