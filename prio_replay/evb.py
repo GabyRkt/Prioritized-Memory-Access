@@ -1,12 +1,12 @@
-import numpy as np
 from typing_extensions import ParamSpecArgs
 from typing import Union
+import numpy as np
+import scipy 
+
 from prio_replay.maze import LinearTrack, OpenField
 from prio_replay.parameters import Parameters
 from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
-import matplotlib.pyplot as plt
-import seaborn as sns
-import scipy 
+
 
 """==============================================================================================================="""
 
