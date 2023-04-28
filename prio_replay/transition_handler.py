@@ -4,7 +4,6 @@ from typing import Union
 
 from prio_replay.maze import LinearTrack, OpenField
 from prio_replay.parameters import Parameters
-from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
 
 
 """==============================================================================================================="""
