@@ -10,15 +10,6 @@ Vous trouverez une première version de notre code : [Prioritized Memory Access]
 
 
 
-# Difficultés rencontrées 
-
-- Compréhension de l'article (i.e. Offline)
-- Implémentation du code
-  - Calcul du need (successor representation)
-  - Planning backup et dimension de planExp
-- Prise en main de matlab
-- Compréhension de MazeMDP
-
 # FIGURES CHECKLIST
 
 FIGURE 1 : 
