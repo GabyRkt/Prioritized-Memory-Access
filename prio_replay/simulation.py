@@ -1,19 +1,16 @@
-import numpy as np
 from typing_extensions import ParamSpecArgs
 from typing import Union
-from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
+import numpy as np
 import random
-import matplotlib.pyplot as plt
-import scipy 
-import seaborn as sns
 
 from prio_replay.maze import LinearTrack, OpenField, Tmaze
 from prio_replay.parameters import Parameters
+from prio_replay.logger import Logger
+
 from prio_replay.evb import get_gain, get_need, get_maxEVB_idx, calculate_evb
 from prio_replay.q_learning import update_q_table, update_q_wplan, get_action
 from prio_replay.transition_handler import run_pre_explore, add_goal2start, update_transition_n_experience
 from prio_replay.planExp import create_plan_exp, expand_plan_exp, update_planning_backups
-from prio_replay.logger import Logger
 
 
 
