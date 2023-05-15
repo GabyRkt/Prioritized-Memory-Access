@@ -1,8 +1,8 @@
 
-from maze import LinearTrack, OpenField
-from parameters import Parameters
-from simulation import run_simulation
-from transition_handler import run_pre_explore
+from prio_replay.maze import LinearTrack, OpenField
+from prio_replay.parameters import Parameters
+from prio_replay.simulation import run_simulation
+from prio_replay.transition_handler import run_pre_explore
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns 
@@ -22,8 +22,6 @@ def plot_1g(mazetype) :
         current_state = 4 # state where the agent is in figure 1.g
 
     p = Parameters()
-    p.actpolicy = "egreedy"    
-    p.epsilon = 0
     
     run_pre_explore(m)
     SR1 = np.linalg.inv(np.eye(len(m.T)) - p.gamma * m.T) # (I - gammaT)^np.NaN
@@ -73,14 +71,14 @@ def plot_1g(mazetype) :
     ax1 = sns.heatmap(need_b4, vmin=0, square=True, yticklabels=False, xticklabels=False, cmap="Blues_r", linewidths=0.003, linecolor="black")
     ax1.set_facecolor('xkcd:black')
 
-    plt.savefig("figures/fig_1g/"+mazetype+"_before_learning.png")
+    plt.savefig("figures/Figure_1/"+mazetype+"_before_learning.png")
 
     f2 = plt.figure(figsize=(20,12))
     f2.suptitle(mazetype+': Need After Learning')
 
     ax2 = sns.heatmap(need_after, vmin=0,square=True, yticklabels=False, xticklabels=False, cmap="Blues_r", linewidths=0.003, linecolor="black")
     ax2.set_facecolor('xkcd:black')
-    plt.savefig("figures/fig_1g/"+mazetype+"_after_learning.png")
+    plt.savefig("figures/Figure_1/"+mazetype+"_after_learning.png")
 
 
 plot_1g("OpenField")

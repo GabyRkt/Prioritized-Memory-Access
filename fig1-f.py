@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from parameters import Parameters
+from prio_replay.parameters import Parameters
 
 import warnings
 warnings.filterwarnings("ignore")

@@ -1,6 +1,7 @@
-from maze import LinearTrack, OpenField
-from parameters import Parameters
-from simulation import run_simulation
+from prio_replay.maze import LinearTrack, OpenField
+from prio_replay.parameters import Parameters
+from prio_replay.simulation import run_simulation
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -55,6 +56,6 @@ def plot_fig3(mazetype: str="LinearTrack", nb_sims: int = 100) :
 
     return
 
-plot_fig3("LinearTrack",10)
+plot_fig3("LinearTrack",1)
 
 

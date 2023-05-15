@@ -1,8 +1,8 @@
 
-from maze import LinearTrack, OpenField
-from parameters import Parameters
+from prio_replay.maze import LinearTrack, OpenField
+from prio_replay.parameters import Parameters
 import numpy as np
-from simulation import run_simulation
+from prio_replay.simulation import run_simulation
 import matplotlib.pyplot as plt
 
 import warnings
@@ -11,19 +11,10 @@ warnings.filterwarnings("ignore")
 
 def plot_fig1d(mazetype : str = "OpenField", fig2plot : list = ["pr","rr","nr"], nb_sims : int = 1000) :
     """ mazetype : "OpenField" or "LinearTrack"
-        fig2plot : list containing the names of figures to plot ("pr", "rr", "nr"
+        fig2plot : list containing the names of figures to plot ("pr", "rr", "nr")
         nb_sims : number of simulations, default is set at 1000
     """
 
-    if mazetype == "OpenField" :
-        m_nr = OpenField()  # No Replay Maze
-        m_rr = OpenField()  # Random Replay Maze
-        m_pr = OpenField()  # Prioritized 
-    elif mazetype == "LinearTrack" :
-        m_nr = LinearTrack()
-        m_rr = LinearTrack()
-        m_pr = LinearTrack()
-    
     # NO REPLAY PARAMETERS
     p_nr = Parameters()
     p_nr.actpolicy = "egreedy"
@@ -51,6 +42,28 @@ def plot_fig1d(mazetype : str = "OpenField", fig2plot : list = ["pr","rr","nr"],
     p_pr.allneed2one = False
 
     prio_replay = [0] * 50
+
+    if mazetype == "OpenField" :
+        m_nr = OpenField()  # No Replay Maze
+        p_nr.start_rand = True
+
+        m_rr = OpenField()  # Random Replay Maze
+        p_rr.start_rand = True
+
+        m_pr = OpenField()  # Prioritized 
+        p_pr.start_rand = True
+
+
+    elif mazetype == "LinearTrack" :
+        m_nr = LinearTrack() # No Replay Maze
+        p_nr.start_rand = False
+
+        m_rr = LinearTrack() # Random Replay Maze
+        p_rr.start_rand = False
+
+        m_pr = LinearTrack() # Prioritized 
+        p_pr.start_rand = False
+    
 
     # RUN X SIMULATIONS TO GET THE AVERAGE NB STEPS FOR EACH EPISODE
     for i in range(nb_sims) :
@@ -91,7 +104,7 @@ def plot_fig1d(mazetype : str = "OpenField", fig2plot : list = ["pr","rr","nr"],
     plt.show()
 
 
-plot_fig1d("LinearTrack",["nr","rr","pr"],1)
+plot_fig1d("LinearTrack",["nr","rr","pr"],500)
 
 
 

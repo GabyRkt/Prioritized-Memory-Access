@@ -12,7 +12,6 @@ def plot_5a():
     pA_pre = np.exp(softmaxInvT * Qpre) / np.sum(np.exp(softmaxInvT * Qpre))
 
 
-
     # ----------- Figure a ------------- #
 
     Qpost = np.array([[-1, 0], [0.5, 0], [3,0]])
@@ -70,10 +69,6 @@ def plot_5a():
 
 
     plt.show()
-    # print(gain)
-
-
-
 
 
 plot_5a()
