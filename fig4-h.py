@@ -35,40 +35,20 @@ def plot_4h(nb_sims : int = 500) :
 
         state = log.replay_state[k]
         action = log.replay_action[k]
-        # print(state)
-        # print(action)
 
         # Reshape the state and action arrays to a column 
         state_col = np.reshape(state, (-1, 1))
         action_col = np.reshape(action, (-1, 1))
-        # print("ACTION")
-        # print(action_col)
-        # print("STATE")
-        # print(state_col)
-
 
         # Concatenate the state and action arrays horizontally
         saReplay = np.hstack((state_col, action_col))
 
-        # print(saReplay)
-        # print(saReplay[:,0])
-
-
         for st in range(m.nb_states):
             for at in range(4):
-                # print("BRIDGE: st" + str(st) + ",at" + str(at))
                 replayCount[k,st,at] = np.sum((saReplay[:,0]==st) & (saReplay[:,1]==at))
-                # print(replayCount[k,st,at])
-
+ 
             
     replayCount = np.mean(replayCount, axis=0)
-    # print(replayCount)
-    # print(replayCount[2, 2])
-    # print(replayCount[4, 2])
-    # print(replayCount[2, 3])
-    # print(replayCount[1, 3])
-    # print(np.sum(replayCount))
-
 
     replayRight = replayCount[2,2] + replayCount[4,2]
     replayLeft = replayCount[2, 3] + replayCount[1,3]
@@ -83,6 +63,6 @@ def plot_4h(nb_sims : int = 500) :
     plt.show()
 
 
-plot_4h(25)
+plot_4h()
 
 
