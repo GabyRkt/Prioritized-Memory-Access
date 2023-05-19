@@ -14,9 +14,9 @@ def plot_fig6b( nb_sims : int = 100 ) :
     m = LinearTrack()
     p = Parameters()
     p.actpolicy = "softmax"
-    p.tau = 0.2
-    p.epsilon = 0.1
-    p.sigma = 0.5
+    p.tau = 50
+    p.epsilon = 0
+    p.sigma = 0.1
     p.start_rand = False
     p.Tgoal2start = True
     p.onlineVSoffline = "online"
@@ -24,9 +24,8 @@ def plot_fig6b( nb_sims : int = 100 ) :
 
 
     # variables to store and plot data
-    forward = [0] * 50
-    backward = [0] * 50
-    activation = [0] * 50
+    activation = [0] * 2000
+
 
     for i in range(nb_sims) :
         print("[fig 6b] : running simulation : "+str(i+1)+"/"+str(nb_sims))
@@ -34,22 +33,28 @@ def plot_fig6b( nb_sims : int = 100 ) :
         log = run_simulation(m,p)
 
         # get the average amount of forward or backward per episode
-        forward = [ forward[k] + (log.forward[k]/nb_sims) for k in range(50) ]
-        backward = [ backward[k] + (log.backward[k]/nb_sims) for k in range(50) ]
-        activation = [ activation[k] + (sum(log.nb_backups_per_state[k])/nb_sims) for k in range(50)]
+        visits = log.steps_per_episode
 
-    # calculate the average between forward and backward
-    avg_f_b = [ (f + b) / 2 for f, b in zip(forward, backward) ]
+        for elem in visits :
+            print(len(elem))
 
+        for ep_i in range(p.MAX_N_EPISODES) :
+            ep_i_visit = visits[ep_i]
+            ep_i_activation = log.forward_per_state[ep_i] + log.backward_per_state[ep_i]
 
+            for state in ep_i_activation :
+                ind = ep_i_visit.count(state)
+                activation[ind] += 1
+
+            
     figure, axis = plt.subplots(1, 1)
 
     # plot : FORWARD EVENTS PER EPISODE
-    axis.plot(forward)
-    axis.set_title("forward events per episode")
+    axis.plot(activation[0:20])
+    axis.set_title("forward/backward replays per number of visits")
 
-    plt.show(10)
+    plt.show()
 
     return
 
-plot_fig6b(1)
+plot_fig6b(50)
