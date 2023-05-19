@@ -8,7 +8,7 @@ import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
 
-def plot_fig4a(nb_sims: int = 10) :
+def plot_fig4a(nb_sims: int = 100) :
 
     m = LinearTrack()
     p = Parameters()
@@ -39,4 +39,4 @@ def plot_fig4a(nb_sims: int = 10) :
 
     return
 
-plot_fig4a(1)
+plot_fig4a()
