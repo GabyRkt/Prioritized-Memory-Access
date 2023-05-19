@@ -6,9 +6,8 @@ class Logger :
   """
 
   def __init__(self) :
- 
+
     "stored data"
-    
     # data for fig 1.d
     self.nbStep = []
 
@@ -20,10 +19,18 @@ class Logger :
     self.nbStep_backwardReplay_backward = 0
 
     # data for fig 4a
-    self.dist_agent_replay_state = []
+    self.dist_agent_replay_start = []
 
     # data for fig 4c
     self.nb_backups_per_state = []
+
+    # data for fig 4d
+    self.dist_agent_replay_state = []
+
+    # data for fig 4ef 
+    self.steps_per_episode = []
+    self.backward_per_state = []
+    self.forward_per_state = []
 
     # data for fig 4h
     p = Parameters()
@@ -41,8 +48,6 @@ class Logger :
     self.nb_replay_per_ep = [0 for _ in range(50)]
 
     # data for fig 6b
-    self.forward_per_state = []
-    self.backward_per_state = []
     self.nbvisits_per_state = []
 
   

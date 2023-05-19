@@ -1,16 +1,19 @@
+import numpy as np
 from typing_extensions import ParamSpecArgs
 from typing import Union
-import numpy as np
+from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
 import random
+import matplotlib.pyplot as plt
+import scipy 
+import seaborn as sns
 
 from prio_replay.maze import LinearTrack, OpenField, Tmaze
 from prio_replay.parameters import Parameters
-from prio_replay.logger import Logger
-
 from prio_replay.evb import get_gain, get_need, get_maxEVB_idx, calculate_evb
 from prio_replay.q_learning import update_q_table, update_q_wplan, get_action
 from prio_replay.transition_handler import run_pre_explore, add_goal2start, update_transition_n_experience
 from prio_replay.planExp import create_plan_exp, expand_plan_exp, update_planning_backups
+from prio_replay.logger import Logger
 
 
 
@@ -42,9 +45,18 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
     # initializing logger to store useful data
     log = Logger()
-    log.nb_backups_per_state = [ [0] * m.nb_states ] * params.MAX_N_EPISODES
-    log.forward_per_state =  [ [0] * m.nb_states ] 
-    log.backward_per_state = [0] * m.nb_states
+    
+    for i in range(params.MAX_N_EPISODES) : 
+        f = []; b = []; s = []
+
+        log.forward_per_state.append(f)
+        log.backward_per_state.append(b)
+        log.steps_per_episode.append(s)
+
+        backups = [0] * m.nb_states 
+
+        log.nb_backups_per_state.append(backups)
+        
     log.nbvisits_per_state = [0] * m.nb_states
 
     
@@ -82,15 +94,17 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
             # Perform Action : st , at  
             [stp1, r, done, _] = m.mdp.step(at)
 
+            # saving some data
             log.nbvisits_per_state[st] += 1
 
+            # setting reward
             if params.changeR and r :
                 if params.x4:
                     if ep_i in ([x for x in range (2, 50, 4)]+[x for x in range (3, 50, 4)]) :
                         r = 4
                         log.event_episode.append(ep_i)
                 elif params.x0 :
-                    if random.random() < 0.5:  
+                    if ep_i in ([x for x in range (2, 50, 4)]+[x for x in range (3, 50, 4)]):  
                         r = 0    
                         log.event_episode.append(ep_i)
 
@@ -104,8 +118,26 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
 
             # Update Q-table : off-policy Q-learning using eligibility trace
             update_q_table(st,at,r,stp1, m, params)
-            log.nb_backups_per_state[ep_i][st] += 1
             log.nb_replay_per_ep[ep_i] += 1
+
+            if ep_i > 250 :
+                a = [ max(elem) for elem in m.Q ]
+                need_b4 = [
+                    [ a[0]  , a[2]  , a[4]  , a[6]  , a[8]  , a[10] , a[12] , a[14] , a[16] , a[18]  ],
+                    [ np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN ],
+                    [ a[1]  , a[3]  , a[5]  , a[7]  , a[9]  , a[11] , a[13] , a[15] , a[17] , a[19]  ],
+                ]
+                a = [ " " for elem in m.Q ]
+                a[st] = str(at)
+                need_b5 = [
+                    [ a[0]  , a[2]  , a[4]  , a[6]  , a[8]  , a[10] , a[12] , a[14] , a[16] , a[18]  ],
+                    [ np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN, np.NaN ],
+                    [ a[1]  , a[3]  , a[5]  , a[7]  , a[9]  , a[11] , a[13] , a[15] , a[17] , a[19]  ],
+                ]
+                sns.heatmap(need_b4,annot=need_b5,fmt="")
+                plt.show(block=False)
+                plt.pause(1)
+                plt.close()
 
             # [ PLANNING ]
             p = 1 # planning step counter
@@ -165,7 +197,7 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
                     prev_s , prev_stp1 = update_q_wplan(ep_i, st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_max, m, params)
 
                     if p == 1 :
-                        log.dist_agent_replay_state.append( (st,prev_s) )
+                        log.dist_agent_replay_start.append( (st,prev_s) )
 
                     # Add the updated planExp to planning_backups 
                     planning_backups = update_planning_backups(planning_backups, plan_exp_arr_max)
@@ -183,6 +215,10 @@ def run_simulation(m : Union[LinearTrack,OpenField], params : Parameters) :
             # === Move from st to stp1 ===
             st = stp1
             step_i = step_i + 1
+            
+            log.steps_per_episode[ep_i].append(st)
+
+            
 
             if done :
                 st = m.reset()

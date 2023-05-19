@@ -1,10 +1,11 @@
+import numpy as np
 from typing_extensions import ParamSpecArgs
 from typing import Union
-import numpy as np
-
-from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
 from prio_replay.maze import LinearTrack, OpenField
 from prio_replay.parameters import Parameters
+from mazemdp.toolbox import softmax, egreedy, egreedy_loc, sample_categorical
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 """==============================================================================================================="""
@@ -74,12 +75,16 @@ def update_q_wplan (ep_i, st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_ma
         # Add plan and q_learning updates to q_learning function
         stp1_value = np.max(m.Q[stp1_plan])
         Q_target = r_plan + (params.gamma ** n_plan) * stp1_value
-    
-        log.nb_backups_per_state[ep_i][s_plan] += 1
-        log.nb_replay_per_ep[ep_i] += 1
 
         # Update Q-value for this state-action pair 
         m.Q[s_plan, a_plan] = m.Q[s_plan, a_plan] + params.alpha * (Q_target - m.Q[s_plan, a_plan])
+
+
+        # SAVING DATA
+        log.nb_replay_per_ep[ep_i] += 1
+
+        log.dist_agent_replay_state.append( (st,s_plan) )
+        log.nb_backups_per_state[ep_i][s_plan] += 1
 
         # saving data about forward and reverse replay to plot figures
         if (p > 1) :
@@ -88,30 +93,42 @@ def update_q_wplan (ep_i, st, p, log, step_i, prev_s, prev_stp1, plan_exp_arr_ma
                 if step_i == 0 :
             
                     if s_plan == prev_stp1  :
+
                         log.nbStep_forwardReplay_forward += 1
                         log.forward[ep_i] += 1
+
+                        log.forward_per_state[ep_i].append( s_plan )
                         
-                        # log.nb_backups_per_state[ep_i][s_plan] += 1
+                        #log.nb_backups_per_state[ep_i][s_plan] += 1
                     
                     if stp1_plan == prev_s :
+
                         log.nbStep_backwardReplay_forward += 1
                         log.backward[ep_i] += 1
+
+                        log.backward_per_state[ep_i].append( s_plan )
                         
-                        # log.nb_backups_per_state[ep_i][s_plan] += 1
+                        #log.nb_backups_per_state[ep_i][s_plan] += 1
 
                 else :
                     
                     if s_plan == prev_stp1  :
+                            
                         log.nbStep_forwardReplay_backward += 1
                         log.forward[ep_i] += 1
+
+                        log.forward_per_state[ep_i].append( s_plan )
                         
-                        # log.nb_backups_per_state[ep_i][s_plan] += 1
+                        #log.nb_backups_per_state[ep_i][s_plan] += 1
                     
                     if stp1_plan == prev_s :
+
                         log.nbStep_backwardReplay_backward += 1
                         log.backward[ep_i] += 1
+
+                        log.backward_per_state[ep_i].append( s_plan )
                         
-                        # log.nb_backups_per_state[ep_i][s_plan] += 1
+                        #log.nb_backups_per_state[ep_i][s_plan] += 1
 
     return s_plan, stp1_plan
 
