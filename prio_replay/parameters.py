@@ -35,6 +35,7 @@ class Parameters :
     "inverse temperature for softmax"
 
     self.sigma = 0.1
+    "gaussian noise"
 
     #params for Q-learning :
 
